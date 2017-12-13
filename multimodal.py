@@ -2,10 +2,11 @@
 
 import argparse
 from collections import defaultdict
+from operator import itemgetter
 
 import networkx as nx
 
-from chinese_whispers import chinese_whispers, WEIGHTING
+from chinese_whispers import chinese_whispers, WEIGHTING, aggregate_clusters
 from roles import triples
 
 parser = argparse.ArgumentParser()
@@ -40,12 +41,7 @@ for node in G:
 
 chinese_whispers(G, WEIGHTING['label'])
 
-roles = defaultdict(set)
-
-for node in G:
-    roles[G.node[node]['label']].add(node)
-
-for label, cluster in sorted(roles.items(), key=lambda e: len(e[1]), reverse=True):
+for label, cluster in sorted(aggregate_clusters(G).items(), key=lambda e: len(e[1]), reverse=True):
     print('# Cluster %d' % label)
     print()
 

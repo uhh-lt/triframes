@@ -4,10 +4,9 @@ import argparse
 import concurrent.futures
 from collections import namedtuple, OrderedDict, defaultdict
 
-
 import networkx as nx
 
-from chinese_whispers import chinese_whispers, WEIGHTING
+from chinese_whispers import chinese_whispers, WEIGHTING, aggregate_clusters
 
 Cluster = namedtuple('Cluster', 'id size elements')
 Triple = namedtuple('Triple', 'subject predicate object weight')
@@ -75,9 +74,6 @@ def traverse(*relations, **kwargs):
     return G
 
 
-
-
-
 def emit(id, w2v, cw_mode):
     synset = synsets[id]
 
@@ -130,12 +126,7 @@ if __name__ == '__main__':
                 print('Verbs: %s' % ', '.join(synsets[id].elements))
                 print()
 
-                roles = defaultdict(set)
-
-                for node in G:
-                    roles[G.node[node]['label']].add(node)
-
-                for label, words in roles.items():
+                for label, words in aggregate_clusters(G).items():
                     print('%d: %s' % (label, ', '.join(words)))
                     print()
             else:

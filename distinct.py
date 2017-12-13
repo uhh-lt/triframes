@@ -7,7 +7,7 @@ from operator import itemgetter
 import Pyro4
 import networkx as nx
 
-from chinese_whispers import WEIGHTING, chinese_whispers
+from chinese_whispers import WEIGHTING, chinese_whispers, aggregate_clusters
 from roles import triples
 
 Pyro4.config.SERIALIZER = 'pickle'
@@ -41,11 +41,13 @@ for triple in spos:
     po_inverted[(triple.predicate, triple.object)].add(triple)
     so_inverted[(triple.subject, triple.object)].add(triple)
 
+
 def similarity(word1, word2, default=.3):
     try:
         return w2v.similarity(word1, word2)
     except KeyError:
         return default
+
 
 for node in G_s:
     for feature in po_index[G_s.node[node]['triple']]:
@@ -69,16 +71,7 @@ chinese_whispers(G_s, WEIGHTING['nolog'])
 chinese_whispers(G_p, WEIGHTING['nolog'])
 chinese_whispers(G_o, WEIGHTING['nolog'])
 
-roles_s, roles_p, roles_o = defaultdict(set), defaultdict(set), defaultdict(set)
-
-for node in G_s:
-    roles_s[G_s.node[node]['label']].add(node)
-
-for node in G_p:
-    roles_p[G_p.node[node]['label']].add(node)
-
-for node in G_o:
-    roles_o[G_o.node[node]['label']].add(node)
+roles_s, roles_p, roles_o = aggregate_clusters(G_s), aggregate_clusters(G_p), aggregate_clusters(G_o)
 
 for label, verbs in sorted(roles_p.items(), key=itemgetter(1), reverse=True):
     print('# Cluster %d' % label)
