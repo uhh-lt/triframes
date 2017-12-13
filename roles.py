@@ -3,26 +3,14 @@
 import argparse
 import concurrent.futures
 from collections import namedtuple, OrderedDict, defaultdict
-from math import log2
-from random import shuffle
+
 
 import networkx as nx
 
+from chinese_whispers import chinese_whispers, WEIGHTING
+
 Cluster = namedtuple('Cluster', 'id size elements')
 Triple = namedtuple('Triple', 'subject predicate object weight')
-
-CW_WEIGHT = {
-    'label': lambda G, node: \
-        max(G.node[neighbor]['label'] for neighbor in G[node]),
-    'top': lambda G, node: \
-        G.node[max(G[node], key=lambda neighbor: G[node][neighbor]['weight'])]['label'],
-    'log': lambda G, node: \
-        G.node[max(G[node], key=lambda neighbor: G[node][neighbor]['weight'] / \
-                                                 log2(G.degree(neighbor) + 1))]['label'],
-    'nolog': lambda G, node: \
-        G.node[max(G[node], key=lambda neighbor: G[node][neighbor]['weight'] / \
-                                                 G.degree(neighbor))]['label']
-}
 
 
 def clusters(f, header=False):
@@ -87,28 +75,7 @@ def traverse(*relations, **kwargs):
     return G
 
 
-def chinese_whispers(G, weight, iterations=20):
-    for i, node in enumerate(G):
-        G.node[node]['label'] = i + 1
 
-    for i in range(iterations):
-        changes = False
-
-        nodes = list(G)
-        shuffle(nodes)
-
-        for node in nodes:
-            previous = G.node[node]['label']
-
-            if G[node]:
-                G.node[node]['label'] = weight(G, node)
-
-            changes = changes or previous != G.node[node]['label']
-
-        if not changes:
-            break
-
-    return G
 
 
 def emit(id, w2v, cw_mode):
@@ -128,14 +95,14 @@ def emit(id, w2v, cw_mode):
             subjects[triple.object][triple.subject] = triple.weight
             objects[triple.subject][triple.object] = triple.weight
 
-    G = chinese_whispers(traverse(subjects, objects, w2v=w2v), CW_WEIGHT[cw_mode])
+    G = chinese_whispers(traverse(subjects, objects, w2v=w2v), WEIGHTING[cw_mode])
 
     return id, G
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cw', choices=CW_WEIGHT.keys(), default='nolog')
+    parser.add_argument('--cw', choices=WEIGHTING.keys(), default='nolog')
     parser.add_argument('--min-weight', type=float, default=1000.)
     parser.add_argument('--w2v', default='PYRO:w2v@localhost:9090')
     parser.add_argument('verbs', type=argparse.FileType('r', encoding='UTF-8'))

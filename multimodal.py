@@ -5,7 +5,8 @@ from collections import defaultdict
 
 import networkx as nx
 
-from roles import CW_WEIGHT, triples, chinese_whispers
+from chinese_whispers import chinese_whispers, WEIGHTING
+from roles import triples
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--min-weight', type=float, default=1000.)
@@ -37,7 +38,7 @@ for node in G:
     G.add_edges_from((node, neighbor) for pair in po_index[node] - this for neighbor in po_inverted[pair])
     G.add_edges_from((node, neighbor) for pair in so_index[node] - this for neighbor in so_inverted[pair])
 
-chinese_whispers(G, CW_WEIGHT['label'])
+chinese_whispers(G, WEIGHTING['label'])
 
 roles = defaultdict(set)
 

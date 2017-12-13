@@ -7,12 +7,13 @@ from operator import itemgetter
 import Pyro4
 import networkx as nx
 
-from roles import CW_WEIGHT, triples, chinese_whispers
+from chinese_whispers import WEIGHTING, chinese_whispers
+from roles import triples
 
 Pyro4.config.SERIALIZER = 'pickle'
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--cw', choices=CW_WEIGHT.keys(), default='nolog')
+parser.add_argument('--cw', choices=WEIGHTING.keys(), default='nolog')
 parser.add_argument('--min-weight', type=float, default=1000.)
 parser.add_argument('--w2v', default='PYRO:w2v@localhost:9090')
 parser.add_argument('triples', type=argparse.FileType('r', encoding='UTF-8'))
@@ -64,9 +65,9 @@ for node in G_o:
             if triple.object != node:
                 G_o.add_edge(node, triple.object, weight=similarity(node, triple.object))
 
-chinese_whispers(G_s, CW_WEIGHT['nolog'])
-chinese_whispers(G_p, CW_WEIGHT['nolog'])
-chinese_whispers(G_o, CW_WEIGHT['nolog'])
+chinese_whispers(G_s, WEIGHTING['nolog'])
+chinese_whispers(G_p, WEIGHTING['nolog'])
+chinese_whispers(G_o, WEIGHTING['nolog'])
 
 roles_s, roles_p, roles_o = defaultdict(set), defaultdict(set), defaultdict(set)
 
