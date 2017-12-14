@@ -148,11 +148,8 @@ def featurize(output_fpath):
                             ", ".join("{}:{}".format(w, f) for w, f in used_rverbs), 
                             ", ".join(verb_features)))
 
-def compute_exact_full(
-        wf_w_fpath = "/home/panchenko/tmp/verbs/2.6t/wf-w.csv.gz",
-        pcz_fpath = "/home/panchenko/tmp/originalinventories/wiki-n30.csv.gz",
-        output_fpath = "/home/panchenko/tmp/verbs/exact-full.txt"):
 
+def compute_exact_full(wf_w_fpath, pcz_fpath, output_fpath):
     tic = time()
     wfw = read_csv(wf_w_fpath, sep="\t", encoding="utf-8", names=["verb", "features"])
     sc = SenseClusters(pcz_fpath, strip_dst_senses=False, load_sim=True)
@@ -164,4 +161,11 @@ def compute_exact_full(
     featurize(output_fpath)
     print("Featurized in", time() - tic, "sec.")
     sys.stdout.flush()
+
+
+# example:
+#compute_exact_full(
+#    "/home/panchenko/tmp/verbs/2.6t/wf-w.csv.gz",
+#    "/home/panchenko/tmp/originalinventories/wiki-n30.csv.gz",
+#    "/home/panchenko/tmp/verbs/exact-full.txt")
 
