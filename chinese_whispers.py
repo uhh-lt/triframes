@@ -1,5 +1,5 @@
+from collections import defaultdict
 from math import log2
-
 from random import shuffle
 
 
@@ -55,3 +55,12 @@ def chinese_whispers(G, weighting, iterations=20):
             break
 
     return G
+
+
+def aggregate_clusters(G):
+    clusters = defaultdict(set)
+
+    for node in G:
+        clusters[G.node[node]['label']].add(node)
+
+    return clusters

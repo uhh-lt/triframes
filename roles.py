@@ -4,10 +4,9 @@ import argparse
 import concurrent.futures
 from collections import namedtuple, OrderedDict, defaultdict
 
-
 import networkx as nx
 
-from chinese_whispers import chinese_whispers, WEIGHTING
+from chinese_whispers import chinese_whispers, WEIGHTING, aggregate_clusters
 
 Cluster = namedtuple('Cluster', 'id size elements')
 Triple = namedtuple('Triple', 'subject predicate object weight')
@@ -53,16 +52,16 @@ def triples(f, min_weight=None, build_index=True):
     return spos, index
 
 
+def similarity(w2v, word1, word2, default=.3):
+    if w2v is None:
+        return default
+
+    try:
+        return w2v.similarity(word1, word2)
+    except KeyError:
+        return default
+
 def traverse(*relations, **kwargs):
-    def similarity(word1, word2, default=.3):
-        if not kwargs['w2v'] or kwargs['w2v'] is None:
-            return default
-
-        try:
-            return w2v.similarity(word1, word2)
-        except KeyError:
-            return default
-
     G = nx.Graph()
 
     for relation in relations:
@@ -70,12 +69,9 @@ def traverse(*relations, **kwargs):
             for source in words:
                 for target, weight in words.items():
                     if source != target:
-                        G.add_edge(source, target, weight=similarity(source, target))
+                        G.add_edge(source, target, weight=similarity(kwargs['w2v'], source, target))
 
     return G
-
-
-
 
 
 def emit(id, w2v, cw_mode):
@@ -130,12 +126,7 @@ if __name__ == '__main__':
                 print('Verbs: %s' % ', '.join(synsets[id].elements))
                 print()
 
-                roles = defaultdict(set)
-
-                for node in G:
-                    roles[G.node[node]['label']].add(node)
-
-                for label, words in roles.items():
+                for label, words in aggregate_clusters(G).items():
                     print('%d: %s' % (label, ', '.join(words)))
                     print()
             else:

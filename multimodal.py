@@ -2,18 +2,25 @@
 
 import argparse
 from collections import defaultdict
+from statistics import mean
 
+import Pyro4
 import networkx as nx
 
-from chinese_whispers import chinese_whispers, WEIGHTING
-from roles import triples
+from chinese_whispers import chinese_whispers, WEIGHTING, aggregate_clusters
+from roles import triples, similarity
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--min-weight', type=float, default=1000.)
+parser.add_argument('--cw', choices=WEIGHTING.keys(), default='nolog')
+parser.add_argument('--min-weight', type=float, default=-0.)
+parser.add_argument('--w2v', default='PYRO:w2v@localhost:9090')
 parser.add_argument('triples', type=argparse.FileType('r', encoding='UTF-8'))
 args = parser.parse_args()
 
 spos, _ = triples(args.triples, min_weight=args.min_weight, build_index=False)
+
+Pyro4.config.SERIALIZER = 'pickle'
+w2v = Pyro4.Proxy(args.w2v)
 
 G = nx.Graph(name='Multimodal')
 
@@ -34,18 +41,20 @@ for node in G:
 for node in G:
     this = {node}
 
-    G.add_edges_from((node, neighbor) for pair in sp_index[node] - this for neighbor in sp_inverted[pair])
-    G.add_edges_from((node, neighbor) for pair in po_index[node] - this for neighbor in po_inverted[pair])
-    G.add_edges_from((node, neighbor) for pair in so_index[node] - this for neighbor in so_inverted[pair])
+    G.add_edges_from((node, neighbor) for pair in sp_index[node] - this for neighbor in sp_inverted[pair] if node != neighbor)
+    G.add_edges_from((node, neighbor) for pair in po_index[node] - this for neighbor in po_inverted[pair] if node != neighbor)
+    G.add_edges_from((node, neighbor) for pair in so_index[node] - this for neighbor in so_inverted[pair] if node != neighbor)
 
-chinese_whispers(G, WEIGHTING['label'])
+for source, target in G.edges_iter():
+    G.edge[source][target]['weight'] = mean((
+        similarity(w2v, source.subject, target.subject),
+        similarity(w2v, source.predicate, target.predicate),
+        similarity(w2v, source.object, target.object)
+    ))
 
-roles = defaultdict(set)
+chinese_whispers(G, WEIGHTING[args.cw])
 
-for node in G:
-    roles[G.node[node]['label']].add(node)
-
-for label, cluster in sorted(roles.items(), key=lambda e: len(e[1]), reverse=True):
+for label, cluster in sorted(aggregate_clusters(G).items(), key=lambda e: len(e[1]), reverse=True):
     print('# Cluster %d' % label)
     print()
 
