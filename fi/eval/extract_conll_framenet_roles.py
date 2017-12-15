@@ -197,22 +197,29 @@ def aggregate_frames(name2frame, output_fpath):
             for role in frame.roles:
                 frame2role2lu[frame.name][role.name][role.lu] += 1 # update the count 
                 roles_count += 1
-                
+    print("Roles count:", roles_count)
+    
+    save_frame2role2lu(frame2role2lu)
+
+
+def save_frame2role2lu(frame2role2lu, output_fpath):
     with codecs.open(output_fpath, "w", "utf-8") as out:
         uniq_roles = 0
         for frame in frame2role2lu:
             for role in frame2role2lu[frame]:
-                lus = sorted(frame2role2lu[frame][role].items(), key=operator.itemgetter(1), reverse=True)
-                uniq_roles += 1
-                out.write("{}\t{}\t{}\n".format(
-                    frame,
-                    role,
-                    ", ".join("{}:{}".format(lu, count) for lu, count in lus)))
-    
-    print("Roles count:", roles_count)
+                try:
+                    lus = sorted(frame2role2lu[frame][role].items(), key=operator.itemgetter(1), reverse=True)
+                    uniq_roles += 1
+                    out.write(u"{}\t{}\t{}\n".format(
+                        frame,
+                        role,
+                        u", ".join(u"{}:{}".format(lu, count) for lu, count in lus)))
+                except:
+                    print( "Bad entry:", frame, role, lus)
+                    print(format_exc())
     print("Uniq. roles count:", uniq_roles)
     print("Output:", output_fpath)
-  
+ 
 
 def get_path(g, src, dst):
     """ Returns a list of labels between the src
