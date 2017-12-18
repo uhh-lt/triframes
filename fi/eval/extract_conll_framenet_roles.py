@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+import argparse
 from glob import glob
 from collections import defaultdict
 from collections import namedtuple
@@ -10,7 +14,7 @@ import codecs
 from collections import Counter
 import networkx as nx
 from networkx import NetworkXNoPath
-from __future__ import print_function
+
 
 test_sentence = """
 # RID: 2492
@@ -55,9 +59,11 @@ role_prefix = "#     "
 framename_prefix = '"'
 role_key_value_sep = ":"
 
+
 Frame = namedtuple('Frame', 'name roles')
 Role = namedtuple('Role', 'name lu ids')
 Dependency = namedtuple('Dependency', 'src token lemma pos dep dst')
+
 
 def file_split(fpath, delim='\n\n', bufsize=1024):
     with codecs.open(fpath, "r", "utf-8") as f:
@@ -147,16 +153,7 @@ def parse_dep(fields):
         pos = fields[3],
         dst = fields[8],
         dep = fields[9])
-   
 
-def get_syn_paths(frames, deps):
-    """ Returns shortest paths between FEE and roles and 
-    roles in the parse trees. """
-    
-    fee2role = Counter()
-    role2role = Counter()
-    
-    return fee2role, role2role
 
 def extract_frames(conll_dir):
     conll_fpaths = glob(join(conll_dir,"*.conll"))
@@ -174,7 +171,7 @@ def extract_frames(conll_dir):
             frames, deps = parse_sentence(sent_str)
             
             for f in frames: name2frame[f.name].append(f)
-            fee2role, role2role  = get_syn_paths(frames, deps)
+            fee2role, role2role = get_syn_paths(frames, deps)
             paths_fee2role.update(fee2role)
             paths_role2role.update(role2role)
             
@@ -199,7 +196,7 @@ def aggregate_frames(name2frame, output_fpath):
                 roles_count += 1
     print("Roles count:", roles_count)
     
-    save_frame2role2lu(frame2role2lu)
+    save_frame2role2lu(frame2role2lu, output_fpath)
 
 
 def save_frame2role2lu(frame2role2lu, output_fpath):
@@ -283,7 +280,6 @@ def build_graph(deps):
                 edges.append( (d.src, dst_id, dst_label) ) 
               
     return build_nx_graph(nodes, edges)
-  
 
 
 def get_syn_paths(frames, deps):
@@ -337,6 +333,7 @@ def save_path_stats(x2role, output_fpath):
 
     print("Output:", output_fpath)
 
+
 def run(conll_dir, output_dir):
     fee2role_fpath = join(output_dir, "fee2role.csv")
     role2role_fpath = join(output_dir, "role2role.csv")
@@ -348,6 +345,18 @@ def run(conll_dir, output_dir):
     aggregate_frames(name2frame, slots_fpath)
     
 
-run(conll_dir = "/home/panchenko/verbs/frames/parsed_framenet-1.0/collapsed_dependencies/fulltext",
-    output_dir = "/home/panchenko/verbs/frames/framenet/slots/")
+def main():
+    parser = argparse.ArgumentParser(description='Extracts an evaluation dataset for role induction'
+            'from the conll framenet files.')
+    parser.add_argument('conll_dir', help='Directory with the .conll files (dep.parsed framenet).')
+    parser.add_argument('output_dir', help='Output directory.')
+    args = parser.parse_args()
+    print("Input: ", args.conll_dir)
+    print("Output: ", args.output_dir)
+
+    run(args.conll_dir, args.output_dir)
+
+
+if __name__ == '__main__':
+    main()
 

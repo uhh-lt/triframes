@@ -1,5 +1,8 @@
-from glob import glob 
+#!/usr/bin/env python
+
 from __future__ import print_function
+from glob import glob 
+import argparse
 import xml.etree.ElementTree as et
 from collections import defaultdict 
 from os.path import join 
@@ -52,13 +55,13 @@ sample_xml = """
 """
 
 
-def extact_frame2role2lu(framenet_dir, output_dir, verbose = False):
+def extact_frame2role2lu(xml_dir, output_dir, verbose = False):
     """ Count frame - role - lu frequencies in the sentences """
     
-    text_fpaths = join(framenet_dir, "fulltext/*xml")
-
+    xml_fpaths = join(xml_dir, "*xml")
+    
     frame2role2lu = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
-    for i, text_fpath in enumerate(glob(text_fpaths)):
+    for i, text_fpath in enumerate(glob(xml_fpaths)):
         if verbose: print(text_fpath)
 
         tree = et.parse(text_fpath)
@@ -89,9 +92,25 @@ def extact_frame2role2lu(framenet_dir, output_dir, verbose = False):
     return frame2role2lu
                          
 
-def run(framenet_dir="fndata-1.7", output_fpath="framenet1.7-role-lus.csv"):
+def run(xml_dir, output_fpath):
     """ Gets the path to the framenet root directory and output the csv file with role lus. """
 
-    frame2role2lu = extact_frame2role2lu()
+    frame2role2lu = extact_frame2role2lu(xml_dir, output_fpath)
     save_frame2role2lu(frame2role2lu, output_fpath)
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Extracts an evaluation dataset for role induction'
+            'from the xml framenet files.')
+    parser.add_argument('xml_dir', help='Directory with the xml files of framenet.')
+    parser.add_argument('output_fpath', help='Output directory.')
+    args = parser.parse_args()
+    print("Input: ", args.xml_dir)
+    print("Output: ", args.output_fpath)
+
+    run(args.xml_dir, args.output_fpath)
+
+
+if __name__ == '__main__':
+    main()
 
