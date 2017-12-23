@@ -18,13 +18,13 @@ $ ./distinct.py --cw=log --min-weight=1000 vso-1.3m-pruned-strict.csv | tee dist
 
 Assuming the command is launched on the ltcpu3 server: 
 
-- Extract the data from the CoNLL parse files:
+- Extract the data from the XML files:
 
 ```shell
 $ ./fi/eval/extract_xml_framenet_roles.py /home/panchenko/verbs/frames/framenet/fndata-1.7/lu_fulltext/ fi/eval/roles-xml2.csv
 ```
 
-- Extract the data from the original XML files:
+- Extract the data from the parsed CoNLL files:
 
 ```shell
 $ ./fi/eval/extract_conll_framenet_roles.py /home/panchenko/verbs/frames/parsed_framenet-1.0/collapsed_dependencies/lu_fulltext_merged/ fi/eval/output/ > fi/eval/output/paths.txt
