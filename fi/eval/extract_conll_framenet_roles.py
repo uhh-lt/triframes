@@ -210,9 +210,10 @@ def save_frame2role2lu(frame2role2lu, output_fpath):
                     out.write(u"{}\t{}\t{}\n".format(
                         frame,
                         role,
-                        u", ".join(u"{}:{}".format(lu, count) for lu, count in lus)))
+                        u", ".join(u"{}:{}".format(
+                            lu.replace(",", " ").replace(":"," "), count) for lu, count in lus)))
                 except:
-                    print( "Bad entry:", frame, role, lus)
+                    print("Bad entry:", frame, role, lus)
                     print(format_exc())
     print("Uniq. roles count:", uniq_roles)
     print("Output:", output_fpath)
