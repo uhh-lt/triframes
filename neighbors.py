@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 
 import argparse
-import sys
 from collections import Counter
 from itertools import zip_longest
 
-import faiss # PYTHONPATH=/path/to/faiss
-import networkx as nx
+import faiss  # PYTHONPATH=/path/to/faiss
 import numpy as np
 
 from roles import triples
@@ -19,7 +17,14 @@ def grouper(iterable, n, fillvalue=None):
     return zip_longest(*args, fillvalue=fillvalue)
 
 
+ELEMENTS = {
+    'subject': lambda triple: triple.subject,
+    'predicate': lambda triple: triple.predicate,
+    'object': lambda triple: triple.object
+}
+
 parser = argparse.ArgumentParser()
+parser.add_argument('--element', choices=ELEMENTS.keys(), required=True)
 parser.add_argument('--neighbors', type=int, default=10)
 parser.add_argument('--min-weight', type=float, default=1000.)
 parser.add_argument('--w2v', default='PYRO:w2v@localhost:9090')
@@ -33,10 +38,11 @@ w2v = Pyro4.Proxy(args.w2v)
 
 spos, index = triples(args.triples, min_weight=args.min_weight)
 
-subjects = {triple.subject for triple in spos}
+accessor = ELEMENTS[args.element]
+vocabulary = {accessor(triple) for triple in spos}
 vectors = {}
 
-for words in grouper(subjects, 512):
+for words in grouper(vocabulary, 512):
     vectors.update(w2v.words_vec(words))
 
 X, index2word = np.empty((len(vectors), w2v.vector_size), 'float32'), {}
@@ -52,7 +58,7 @@ y = np.array([w2v.word_vec('people')])
 
 D, I = knn.search(X, args.neighbors + 1)
 
-G = nx.Graph()
+edges = set()
 
 for i, (_D, _I) in enumerate(zip(D, I)):
     source = index2word[i]
@@ -63,6 +69,7 @@ for i, (_D, _I) in enumerate(zip(D, I)):
             words[index2word[j]] = d
 
     for target, distance in words.most_common(args.neighbors):
-        G.add_edge(source, target, weight=distance)
+        edges.add((source, target, distance))
 
-nx.write_weighted_edgelist(G, sys.stdout, delimiter='\t')
+for source, target, distance in edges:
+    print('%s\t%s\t%f' % (source, target, distance))
