@@ -54,8 +54,6 @@ for j, (target, vector) in enumerate(vectors.items()):
 knn = faiss.IndexFlatIP(X.shape[1])
 knn.add(X)
 
-y = np.array([w2v.word_vec('people')])
-
 D, I = knn.search(X, args.neighbors + 1)
 
 edges = set()
