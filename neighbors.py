@@ -47,9 +47,9 @@ for words in grouper(vocabulary, 512):
 
 X, index2word = np.empty((len(vectors), w2v.vector_size), 'float32'), {}
 
-for j, (target, vector) in enumerate(vectors.items()):
-    X[j] = vector
-    index2word[j] = target
+for i, (target, vector) in enumerate(vectors.items()):
+    X[i] = vector
+    index2word[i] = target
 
 knn = faiss.IndexFlatIP(X.shape[1])
 knn.add(X)
