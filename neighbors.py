@@ -36,7 +36,7 @@ import Pyro4
 Pyro4.config.SERIALIZER = 'pickle'  # see the Disclaimer
 w2v = Pyro4.Proxy(args.w2v)
 
-spos, index = triples(args.triples, min_weight=args.min_weight)
+spos, _ = triples(args.triples, min_weight=args.min_weight, build_index=False)
 
 accessor = ELEMENTS[args.element]
 vocabulary = {accessor(triple) for triple in spos}
@@ -67,7 +67,10 @@ for i, (_D, _I) in enumerate(zip(D, I)):
             words[index2word[j]] = d
 
     for target, distance in words.most_common(args.neighbors):
-        edges.add((source, target, distance))
+        if source > target:
+            edges.add((source, target, distance))
+        else:
+            edges.add((target, source, distance))
 
 for source, target, distance in edges:
     print('%s\t%s\t%f' % (source, target, distance))
