@@ -45,8 +45,8 @@ for cluster in objects.values():
 for cluster in predicates.values():
     predicate_triples = {spos[id] for predicate in cluster.elements for id in predicate_index[predicate]}
 
-    subject_ctx = {triple.subject: 1 for triple in predicate_triples}
-    object_ctx = {triple.object: 1 for triple in predicate_triples}
+    subject_ctx = Counter([triple.subject for triple in predicate_triples])
+    object_ctx = Counter([triple.object for triple in predicate_triples])
 
     subject_space = {id for subject in subject_ctx for id in subject_index[subject]}
     object_space = {id for object in object_ctx for id in object_index[object]}
