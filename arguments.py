@@ -58,8 +58,8 @@ def emit(id):
 
     predicate_triples = {spos[id] for predicate in cluster.elements for id in predicate_index[predicate]}
 
-    subject_ctx = Counter([triple.subject for triple in predicate_triples])
-    object_ctx = Counter([triple.object for triple in predicate_triples])
+    subject_ctx = Counter([triple.subject for triple in predicate_triples if triple.subject in subject_index])
+    object_ctx = Counter([triple.object for triple in predicate_triples if triple.object in object_index])
 
     subject_space = {id for subject in subject_ctx for id in subject_index[subject]}
     object_space = {id for object in object_ctx for id in object_index[object]}
