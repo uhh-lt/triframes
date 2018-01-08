@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+import concurrent.futures
 from collections import defaultdict, Counter
 
 from sklearn.feature_extraction import DictVectorizer
@@ -17,6 +18,10 @@ parser.add_argument('subjects', type=argparse.FileType('r', encoding='UTF-8'))
 parser.add_argument('predicates', type=argparse.FileType('r', encoding='UTF-8'))
 parser.add_argument('objects', type=argparse.FileType('r', encoding='UTF-8'))
 args = parser.parse_args()
+
+import functools
+
+print = functools.partial(print, flush=True)
 
 spos, predicate_index = triples(args.triples, min_weight=args.min_weight)
 subjects, predicates, objects = clusters(args.subjects), clusters(args.predicates), clusters(args.objects)
@@ -47,7 +52,10 @@ for i, cluster in enumerate(objects.values()):
 
     object_vec[cluster.id] = len(subject_vec) + i
 
-for x, cluster in enumerate(predicates.values()):
+
+def emit(id):
+    cluster = predicates[id]
+
     predicate_triples = {spos[id] for predicate in cluster.elements for id in predicate_index[predicate]}
 
     subject_ctx = Counter([triple.subject for triple in predicate_triples])
@@ -59,13 +67,24 @@ for x, cluster in enumerate(predicates.values()):
     subject_sim = Counter({id: sim(v.transform(subject_ctx), X[subject_vec[id]]).item(0) for id in subject_space})
     object_sim = Counter({id: sim(v.transform(object_ctx), X[object_vec[id]]).item(0) for id in object_space})
 
-    print('# Cluster %s\n' % cluster.id)
-    print('Predicates: %s' % ', '.join(cluster.elements))
+    return cluster.id, subject_sim.most_common(1), object_sim.most_common(1)
 
-    for id, cosine in subject_sim.most_common(1):
-        print('Subjects (sim = %.4f): %s' % (cosine, ', '.join(subjects[id].elements)))
 
-    for id, cosine in object_sim.most_common(1):
-        print('Objects (sim = %.4f): %s' % (cosine, ', '.join(objects[id].elements)))
+with concurrent.futures.ProcessPoolExecutor() as executor:
+    futures = (executor.submit(emit, id) for id in predicates)
 
-    print('')
+    for future in concurrent.futures.as_completed(futures):
+        id, subject_match, object_match = future.result()
+
+        cluster = predicates[id]
+
+        print('# Cluster %s\n' % cluster.id)
+        print('Predicates: %s' % ', '.join(cluster.elements))
+
+        for subject_id, cosine in subject_match:
+            print('Subjects (sim = %.4f): %s' % (cosine, ', '.join(subjects[subject_id].elements)))
+
+        for object_id, cosine in object_match:
+            print('Objects (sim = %.4f): %s' % (cosine, ', '.join(objects[object_id].elements)))
+
+        print('')
