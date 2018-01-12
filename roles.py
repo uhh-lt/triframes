@@ -39,6 +39,9 @@ def triples(f, min_weight=None, build_index=True):
     for line in f:
         predicate, subject, object, weight = line.strip().split('\t', 3)
         predicate, *_ = predicate.rpartition('#')
+        subject, *_ = subject.rpartition('#')
+        object, *_ = object.rpartition('#')
+
         weight = float(weight)
 
         if (min_weight is not None and weight < min_weight) or not subject or not predicate or not object:
@@ -60,6 +63,7 @@ def similarity(w2v, word1, word2, default=.3):
         return w2v.similarity(word1, word2)
     except KeyError:
         return default
+
 
 def traverse(*relations, **kwargs):
     G = nx.Graph()
