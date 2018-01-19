@@ -38,9 +38,20 @@ def triples(f, min_weight=None, build_index=True):
 
     for line in f:
         predicate, subject, object, weight = line.strip().split('\t', 3)
-        predicate, *_ = predicate.rpartition('#')
-        subject, *_ = subject.rpartition('#')
-        object, *_ = object.rpartition('#')
+        predicate, *tail = predicate.rpartition('#')
+
+        if not predicate:
+            predicate = tail[-1]
+
+        subject, *tail = subject.rpartition('#')
+
+        if not subject:
+            subject = tail[-1]
+
+        object, *tail = object.rpartition('#')
+
+        if not object:
+            object = tail[-1]
 
         weight = float(weight)
 
