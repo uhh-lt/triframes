@@ -1,4 +1,4 @@
 gensim>=3.0,<4
-networkx>=1.10,<2
+networkx
 numpy>=1.13.0,<2
 Pyro4>=4.0,<5
