@@ -41,7 +41,7 @@ class Triple {
     String object
 }
 
-def lines(Path path) {
+def lines(path) {
     if (!path.toString().endsWith(".gz")) return Files.lines(path)
 
     Files.newInputStream(path).with { is ->
