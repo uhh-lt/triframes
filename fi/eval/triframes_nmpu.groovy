@@ -40,7 +40,7 @@ class Triple {
 }
 
 def lines(Path path) {
-    if (path.toString().endsWith(".txt")) return Files.lines(path)
+    if (!path.toString().endsWith(".gz")) return Files.lines(path)
 
     Files.newInputStream(path).with { is ->
         new GZIPInputStream(is).with { gis ->
