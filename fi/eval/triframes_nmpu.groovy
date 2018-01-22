@@ -14,10 +14,10 @@ import java.util.regex.Pattern
 
 Locale.setDefault(Locale.ROOT)
 
-CLUSTER = Pattern.compile('^# Cluster (\\w+?)$')
-PREDICATES = Pattern.compile('^Predicates: (.+)$')
-SUBJECTS = Pattern.compile('^Subjects \\(.+?\\): (.+)$')
-OBJECTS = Pattern.compile('^Objects \\(.+?\\): (.+)$')
+CLUSTER = Pattern.compile('^# Cluster *(\\w+?)$')
+PREDICATES = Pattern.compile('^Predicates: *(.+)$')
+SUBJECTS = Pattern.compile('^Subjects *(|\\(.+?\\)): *(.+)$')
+OBJECTS = Pattern.compile('^Objects *(|\\(.+?\\)): *(.+)$')
 
 class Frame {
     public String id
@@ -61,14 +61,14 @@ def arguments(path) {
         matcher = SUBJECTS.matcher(line)
 
         if (matcher.find()) {
-            clusters[id].subjects = matcher.group(1).split(", ")
+            clusters[id].subjects = matcher.group(2).split(", ")
             return
         }
 
         matcher = OBJECTS.matcher(line)
 
         if (matcher.find()) {
-            clusters[id].objects = matcher.group(1).split(", ")
+            clusters[id].objects = matcher.group(2).split(", ")
         }
     }
 
