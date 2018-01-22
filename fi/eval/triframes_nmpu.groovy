@@ -1,18 +1,23 @@
 #!/usr/bin/env groovy
-
-/*
- * Usage: groovy -classpath ../watset-java/target/watset.jar triframes_nmpu.groovy arguments.txt fn-depcc-triples.tsv
- */
-
 import groovy.transform.Canonical
 import groovy.transform.CompileStatic
 import org.nlpub.eval.NormalizedModifiedPurity
 
+import java.nio.charset.StandardCharsets
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.regex.Pattern
+import java.util.zip.GZIPInputStream
 
 Locale.setDefault(Locale.ROOT)
+
+/*
+ * Usage: groovy -classpath ../watset-java/target/watset.jar triframes_nmpu.groovy arguments.txt[.gz] fn-depcc-triples.tsv[.gz]
+ */
+def cli = new CliBuilder(usage: 'triframes_nmpu.groovy arguments.txt[.gz] fn-depcc-triples.tsv[.gz]')
+
+def options = cli.parse(args)
 
 CLUSTER = Pattern.compile('^# Cluster *(\\w+?)$')
 PREDICATES = Pattern.compile('^Predicates: *(.+)$')
@@ -34,12 +39,26 @@ class Triple {
     String object
 }
 
+def lines(Path path) {
+    if (path.toString().endsWith(".txt")) return Files.lines(path)
+
+    Files.newInputStream(path).with { is ->
+        new GZIPInputStream(is).with { gis ->
+            new InputStreamReader(gis, StandardCharsets.UTF_8).with { reader ->
+                new BufferedReader(reader).with { br ->
+                    return br.lines()
+                }
+            }
+        }
+    }
+}
+
 def arguments(path) {
     clusters = new HashMap<String, Frame>()
 
     id = null
 
-    Files.lines(path).each { line ->
+    lines(path).each { line ->
         if (line.empty) return
 
         matcher = CLUSTER.matcher(line)
@@ -98,7 +117,7 @@ def framenet(path) {
 
     id = null
 
-    Files.lines(path).each { line ->
+    lines(path).each { line ->
         if (line.empty) return
 
         matcher = FN_CLUSTER.matcher(line)
@@ -117,9 +136,9 @@ def framenet(path) {
     return NormalizedModifiedPurity.transform(clusters.values())
 }
 
-actual = arguments(Paths.get(args[0]))
+actual = arguments(Paths.get(options.arguments()[0]))
 
-expected = framenet(Paths.get(args[1]))
+expected = framenet(Paths.get(options.arguments()[1]))
 
 nmpu = new NormalizedModifiedPurity<Triple>(actual, expected)
 result = nmpu.get()
