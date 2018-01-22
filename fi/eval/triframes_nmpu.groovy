@@ -24,11 +24,13 @@ PREDICATES = Pattern.compile('^Predicates: *(.+)$')
 SUBJECTS = Pattern.compile('^Subjects *(|\\(.+?\\)): *(.+)$')
 OBJECTS = Pattern.compile('^Objects *(|\\(.+?\\)): *(.+)$')
 
+@CompileStatic
+@Canonical
 class Frame {
-    public String id
-    public Set<String> predicates
-    public Set<String> subjects
-    public Set<String> objects
+    String id
+    Set<String> predicates
+    Set<String> subjects
+    Set<String> objects
 }
 
 @CompileStatic
