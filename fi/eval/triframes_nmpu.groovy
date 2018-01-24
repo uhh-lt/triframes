@@ -5,7 +5,6 @@ import org.nlpub.watset.eval.NormalizedModifiedPurity
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
-import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.regex.Pattern
 import java.util.zip.GZIPInputStream
@@ -145,6 +144,6 @@ expected = framenet(Paths.get(options.arguments()[1]))
 nmpu = new NormalizedModifiedPurity<Triple>(actual, expected)
 result = nmpu.get()
 
-printf("nmPU = %f\n", result.normalizedModifiedPurity)
-printf("niPU = %f\n", result.normalizedInversePurity)
+printf("nmPU = %f\n", result.precision)
+printf("niPU = %f\n", result.recall)
 printf("F1 = %f\n", result.f1Score)
