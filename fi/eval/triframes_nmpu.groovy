@@ -1,7 +1,7 @@
 #!/usr/bin/env groovy
 import groovy.transform.Canonical
 import groovy.transform.CompileStatic
-import org.nlpub.eval.NormalizedModifiedPurity
+import org.nlpub.watset.eval.NormalizedModifiedPurity
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
