@@ -148,9 +148,9 @@ expected = framenet(Paths.get(options.arguments()[1]))
 nmpu = new NormalizedModifiedPurity<Triple>(transform(actual), transform(expected))
 result = nmpu.get()
 
-printf("Triframe nmPU = %f\n", result.precision)
-printf("Triframe niPU = %f\n", result.recall)
-printf("Triframe F1 = %f\n\n", result.f1Score)
+printf("Triframe nmPU = %.5f\n", result.precision)
+printf("Triframe niPU = %.5f\n", result.recall)
+printf("Triframe F1   = %.5f\n\n", result.f1Score)
 
 def extract(triples, closure) {
     triples.stream().map { it.stream().map { closure(it) }.collect(toSet()) }.collect(toList())
@@ -162,9 +162,9 @@ expected_predicates = extract(expected) { triple -> triple.predicate }
 nmpu = new NormalizedModifiedPurity<String>(transform(actual_predicates), transform(expected_predicates))
 result = nmpu.get()
 
-printf("Predicate nmPU = %f\n", result.precision)
-printf("Predicate niPU = %f\n", result.recall)
-printf("Predicate F1 = %f\n\n", result.f1Score)
+printf("Predicate nmPU = %.5f\n", result.precision)
+printf("Predicate niPU = %.5f\n", result.recall)
+printf("Predicate F1   = %.5f\n\n", result.f1Score)
 
 actual_subjects = extract(actual) { triple -> triple.subject }
 expected_subjects = extract(expected) { triple -> triple.subject }
@@ -172,9 +172,9 @@ expected_subjects = extract(expected) { triple -> triple.subject }
 nmpu = new NormalizedModifiedPurity<String>(transform(actual_subjects), transform(expected_subjects))
 result = nmpu.get()
 
-printf("Subject nmPU = %f\n", result.precision)
-printf("Subject niPU = %f\n", result.recall)
-printf("Subject F1 = %f\n\n", result.f1Score)
+printf("Subject nmPU = %.5f\n", result.precision)
+printf("Subject niPU = %.5f\n", result.recall)
+printf("Subject F1   = %.5f\n\n", result.f1Score)
 
 actual_objects = extract(actual) { triple -> triple.object }
 expected_objects = extract(expected) { triple -> triple.object }
@@ -182,6 +182,6 @@ expected_objects = extract(expected) { triple -> triple.object }
 nmpu = new NormalizedModifiedPurity<String>(transform(actual_objects), transform(expected_objects))
 result = nmpu.get()
 
-printf("Object nmPU = %f\n", result.precision)
-printf("Object niPU = %f\n", result.recall)
-printf("Object F1 = %f\n", result.f1Score)
+printf("Object nmPU = %.5f\n", result.precision)
+printf("Object niPU = %.5f\n", result.recall)
+printf("Object F1   = %.5f\n", result.f1Score)
