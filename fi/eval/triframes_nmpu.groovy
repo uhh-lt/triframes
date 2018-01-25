@@ -9,6 +9,10 @@ import java.nio.file.Paths
 import java.util.regex.Pattern
 import java.util.zip.GZIPInputStream
 
+import static NormalizedModifiedPurity.transform
+import static java.util.stream.Collectors.toList
+import static java.util.stream.Collectors.toSet
+
 Locale.setDefault(Locale.ROOT)
 
 /*
@@ -108,7 +112,7 @@ def arguments(path) {
         triples.add(cluster)
     }
 
-    return NormalizedModifiedPurity.transform(triples)
+    return triples
 }
 
 FN_CLUSTER = Pattern.compile('^# *(.+?): .*$')
@@ -134,16 +138,50 @@ def framenet(path) {
         clusters.get(id).add(new Triple(spo[0], spo[1], spo[2]))
     }
 
-    return NormalizedModifiedPurity.transform(clusters.values())
+    return clusters.values()
 }
 
 actual = arguments(Paths.get(options.arguments()[0]))
 
 expected = framenet(Paths.get(options.arguments()[1]))
 
-nmpu = new NormalizedModifiedPurity<Triple>(actual, expected)
+nmpu = new NormalizedModifiedPurity<Triple>(transform(actual), transform(expected))
 result = nmpu.get()
 
-printf("nmPU = %f\n", result.precision)
-printf("niPU = %f\n", result.recall)
-printf("F1 = %f\n", result.f1Score)
+printf("Triframe nmPU = %f\n", result.precision)
+printf("Triframe niPU = %f\n", result.recall)
+printf("Triframe F1 = %f\n\n", result.f1Score)
+
+def extract(triples, closure) {
+    triples.stream().map { it.stream().map { closure(it) }.collect(toSet()) }.collect(toList())
+}
+
+actual_predicates = extract(actual) { triple -> triple.predicate }
+expected_predicates = extract(expected) { triple -> triple.predicate }
+
+nmpu = new NormalizedModifiedPurity<String>(transform(actual_predicates), transform(expected_predicates))
+result = nmpu.get()
+
+printf("Predicate nmPU = %f\n", result.precision)
+printf("Predicate niPU = %f\n", result.recall)
+printf("Predicate F1 = %f\n\n", result.f1Score)
+
+actual_subjects = extract(actual) { triple -> triple.subject }
+expected_subjects = extract(expected) { triple -> triple.subject }
+
+nmpu = new NormalizedModifiedPurity<String>(transform(actual_subjects), transform(expected_subjects))
+result = nmpu.get()
+
+printf("Subject nmPU = %f\n", result.precision)
+printf("Subject niPU = %f\n", result.recall)
+printf("Subject F1 = %f\n\n", result.f1Score)
+
+actual_objects = extract(actual) { triple -> triple.object }
+expected_objects = extract(expected) { triple -> triple.object }
+
+nmpu = new NormalizedModifiedPurity<String>(transform(actual_objects), transform(expected_objects))
+result = nmpu.get()
+
+printf("Object nmPU = %f\n", result.precision)
+printf("Object niPU = %f\n", result.recall)
+printf("Object F1 = %f\n", result.f1Score)
