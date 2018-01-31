@@ -87,6 +87,6 @@ for label, cluster in sorted(aggregate_clusters(G).items(), key=lambda e: len(e[
     subjects = {triple.subject for triple in cluster}
     objects = {triple.object for triple in cluster}
 
-    print('Predicates: %s\n' % ', '.join(predicates))
-    print('Subjects: %s\n' % ', '.join(subjects))
+    print('Predicates: %s' % ', '.join(predicates))
+    print('Subjects: %s' % ', '.join(subjects))
     print('Objects: %s\n' % ', '.join(objects))
