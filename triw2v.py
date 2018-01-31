@@ -23,7 +23,7 @@ def grouper(iterable, n, fillvalue=None):
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--neighbors', type=int, default=10)
+parser.add_argument('--neighbors', '-n', type=int, default=10)
 parser.add_argument('--min-weight', type=float, default=1000.)
 parser.add_argument('--w2v', default='PYRO:w2v@localhost:9090')
 parser.add_argument('triples', type=argparse.FileType('r', encoding='UTF-8'))
