@@ -24,7 +24,7 @@ def options = new CliBuilder().with {
     parse(args) ?: System.exit(1)
 }
 
-CLUSTER = Pattern.compile('^# Cluster *(\\w+?)$')
+CLUSTER = Pattern.compile('^# Cluster *(.+?)$')
 PREDICATES = Pattern.compile('^Predicates: *(.+)$')
 SUBJECTS = Pattern.compile('^Subjects *(|\\(.+?\\)): *(.+)$')
 OBJECTS = Pattern.compile('^Objects *(|\\(.+?\\)): *(.+)$')
