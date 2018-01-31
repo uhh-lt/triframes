@@ -10,6 +10,8 @@ import java.util.regex.Pattern
 import java.util.zip.GZIPInputStream
 
 import static NormalizedModifiedPurity.transform
+import static java.util.stream.Collectors.toList
+import static java.util.stream.Collectors.toSet
 
 Locale.setDefault(Locale.ROOT)
 
@@ -27,9 +29,19 @@ OBJECTS = Pattern.compile('^Objects *(|\\(.+?\\)): *(.+)$')
 
 @CompileStatic
 @Canonical
-class Element {
-    String type
-    String word
+class Frame {
+    String id
+    Set<String> predicates
+    Set<String> subjects
+    Set<String> objects
+}
+
+@CompileStatic
+@Canonical
+class Triple {
+    String subject
+    String predicate
+    String object
 }
 
 def lines(path) {
@@ -47,7 +59,7 @@ def lines(path) {
 }
 
 def arguments(path) {
-    clusters = new HashMap<String, Set<Element>>()
+    clusters = new HashMap<String, Frame>()
 
     id = null
 
@@ -58,38 +70,55 @@ def arguments(path) {
 
         if (matcher.find()) {
             id = matcher.group(1)
-            clusters[id] = new HashSet<Element>()
+            clusters[id] = new Frame()
+            clusters[id].id = id
             return
         }
 
         matcher = PREDICATES.matcher(line)
 
         if (matcher.find()) {
-            clusters[id].addAll(matcher.group(1).split(", ").collect { new Element('predicate', it) })
+            clusters[id].predicates = matcher.group(1).split(", ")
             return
         }
 
         matcher = SUBJECTS.matcher(line)
 
         if (matcher.find()) {
-            clusters[id].addAll(matcher.group(2).split(", ").collect { new Element('subject', it) })
+            clusters[id].subjects = matcher.group(2).split(", ")
             return
         }
 
         matcher = OBJECTS.matcher(line)
 
         if (matcher.find()) {
-            clusters[id].addAll(matcher.group(2).split(", ").collect { new Element('object', it) })
+            clusters[id].objects = matcher.group(2).split(", ")
         }
     }
 
-    return clusters.values()
+    triples = new HashSet<Collection<Triple>>(clusters.size())
+
+    clusters.each { _, frame ->
+        cluster = new HashSet<Triple>()
+
+        frame.predicates.each { predicate ->
+            frame.subjects.each { subject ->
+                frame.objects.each { object ->
+                    cluster.add(new Triple(subject, predicate, object))
+                }
+            }
+        }
+
+        triples.add(cluster)
+    }
+
+    return triples
 }
 
 FN_CLUSTER = Pattern.compile('^# *(.+?): .*$')
 
 def framenet(path) {
-    clusters = new HashMap<String, Set<Element>>()
+    clusters = new HashMap<String, Collection<Triple>>()
 
     id = null
 
@@ -100,15 +129,13 @@ def framenet(path) {
 
         if (matcher.find()) {
             id = matcher.group(1)
-            if (!clusters.containsKey(id)) clusters.put(id, new HashSet<Element>())
+            if (!clusters.containsKey(id)) clusters.put(id, new HashSet<Triple>())
             return
         }
 
         spo = line.split('\t', 3)
 
-        clusters.get(id).add(new Element("subject", spo[0]))
-        clusters.get(id).add(new Element("predicate", spo[1]))
-        clusters.get(id).add(new Element("object", spo[2]))
+        clusters.get(id).add(new Triple(spo[0], spo[1], spo[2]))
     }
 
     return clusters.values()
@@ -118,33 +145,33 @@ actual = arguments(Paths.get(options.arguments()[0]))
 
 expected = framenet(Paths.get(options.arguments()[1]))
 
-nmpu = new NormalizedModifiedPurity<Element>(transform(actual), transform(expected))
+nmpu = new NormalizedModifiedPurity<Triple>(transform(actual), transform(expected))
 result = nmpu.get()
 
 printf("Triframe  nmPU/niPU/F1: %.5f\t%.5f\t%.5f\n", result.precision, result.recall, result.f1Score)
 
-def extract(frames, type) {
-    frames.collect { frame -> frame.grep { (it.type == type) } }
+def extract(triples, closure) {
+    triples.stream().map { it.stream().map { closure(it) }.collect(toSet()) }.collect(toList())
 }
 
-actual_predicates = extract(actual, 'predicate')
-expected_predicates = extract(expected, 'predicate')
+actual_predicates = extract(actual) { triple -> triple.predicate }
+expected_predicates = extract(expected) { triple -> triple.predicate }
 
 nmpu = new NormalizedModifiedPurity<String>(transform(actual_predicates), transform(expected_predicates))
 result = nmpu.get()
 
 printf("Predicate nmPU/niPU/F1: %.5f\t%.5f\t%.5f\n", result.precision, result.recall, result.f1Score)
 
-actual_subjects = extract(actual, 'subject')
-expected_subjects = extract(expected, 'subject')
+actual_subjects = extract(actual) { triple -> triple.subject }
+expected_subjects = extract(expected) { triple -> triple.subject }
 
 nmpu = new NormalizedModifiedPurity<String>(transform(actual_subjects), transform(expected_subjects))
 result = nmpu.get()
 
 printf("Subject   nmPU/niPU/F1: %.5f\t%.5f\t%.5f\n", result.precision, result.recall, result.f1Score)
 
-actual_objects = extract(actual, 'object')
-expected_objects = extract(expected, 'object')
+actual_objects = extract(actual) { triple -> triple.object }
+expected_objects = extract(expected) { triple -> triple.object }
 
 nmpu = new NormalizedModifiedPurity<String>(transform(actual_objects), transform(expected_objects))
 result = nmpu.get()
