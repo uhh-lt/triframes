@@ -55,7 +55,7 @@ watset.run()
 
 id = 0
 
-watset.clusters.each { cluster ->
+watset.clusters.sort { -it.size() }.each { cluster ->
     printf('# Cluster %d\n\n', ++id)
 
     predicates = cluster.collect { it.predicate }.toSet().join(', ')
