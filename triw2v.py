@@ -7,6 +7,7 @@ from itertools import zip_longest
 import faiss
 import networkx as nx
 import numpy as np
+import sys
 from chinese_whispers import chinese_whispers, aggregate_clusters
 
 from roles import triples
@@ -26,6 +27,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--neighbors', '-n', type=int, default=10)
 parser.add_argument('--min-weight', type=float, default=1000.)
 parser.add_argument('--w2v', default='PYRO:w2v@localhost:9090')
+parser.add_argument('--pickle', type=argparse.FileType('wb'))
 parser.add_argument('triples', type=argparse.FileType('r', encoding='UTF-8'))
 args = parser.parse_args()
 
@@ -50,7 +52,7 @@ X, index2triple = np.empty((len(spos), w2v.vector_size * 3), 'float32'), {}
 
 for i, triple in enumerate(spos):
     X[i] = np.concatenate((vectors[triple.subject], vectors[triple.predicate], vectors[triple.object]))
-    index2triple[i] = triple
+    index2triple[i] = (triple.subject, triple.predicate, triple.object)
 
 knn = faiss.IndexFlatIP(X.shape[1])
 knn.add(X)
@@ -71,11 +73,17 @@ for i, (_D, _I) in enumerate(zip(D, I)):
 
     for target, distance in words.most_common(args.neighbors):
         # FIXME: our vectors are normalized, but the distance is greater than 1
+        distance = float(distance)
         G.add_edge(source, target, weight=distance)
         maximal_distance = distance if distance > maximal_distance else maximal_distance
 
 for _, _, d in G.edges(data=True):
     d['weight'] = maximal_distance / d['weight']
+
+if args.pickle is not None:
+    import pickle
+    pickle.dump(list(G.edges(data=True)), args.pickle, protocol=3)
+    sys.exit(0)
 
 chinese_whispers(G, weighting='top', iterations=20)
 clusters = aggregate_clusters(G)
