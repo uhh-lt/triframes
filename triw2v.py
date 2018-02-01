@@ -91,9 +91,9 @@ clusters = aggregate_clusters(G)
 for label, cluster in sorted(aggregate_clusters(G).items(), key=lambda e: len(e[1]), reverse=True):
     print('# Cluster %d\n' % label)
 
-    predicates = {triple.predicate for triple in cluster}
-    subjects = {triple.subject for triple in cluster}
-    objects = {triple.object for triple in cluster}
+    predicates = {predicate for predicate, _, _ in cluster}
+    subjects = {subject for _, subject, _ in cluster}
+    objects = {object for _, _, object in cluster}
 
     print('Predicates: %s' % ', '.join(predicates))
     print('Subjects: %s' % ', '.join(subjects))
