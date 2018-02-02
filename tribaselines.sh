@@ -8,7 +8,6 @@ export WEIGHT=0
 
 for setup in triples triples-prepless; do
   export VSO=depcc-common-$setup.tsv
-
   GOLD=fn-depcc-$setup.tsv
 
   for K in 10 150 500 1500 3000; do
