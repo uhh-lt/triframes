@@ -54,25 +54,29 @@ for i, triple in enumerate(spos):
 knn = faiss.IndexFlatIP(X.shape[1])
 knn.add(X)
 
-D, I = knn.search(X, args.neighbors + 1)
+G, maximal_distance = nx.Graph(), -1
 
-G = nx.Graph()
+for slice in grouper(range(X.shape[0]), 2048):
+    slice = [j for j in slice if j is not None]
 
-maximal_distance = -1
+    D, I = knn.search(X[slice, :], args.neighbors + 1)
 
-for i, (_D, _I) in enumerate(zip(D, I)):
-    source = index2triple[i]
-    words = Counter()
+    last = min(slice)
+    print('%d / %d' % (last, X.shape[0]), file=sys.stderr)
 
-    for d, j in zip(_D.ravel(), _I.ravel()):
-        if i != j:
-            words[index2triple[j]] = d
+    for i, (_D, _I) in enumerate(zip(D, I)):
+        source = index2triple[last + i]
+        words = Counter()
 
-    for target, distance in words.most_common(args.neighbors):
-        # FIXME: our vectors are normalized, but the distance is greater than 1
-        distance = float(distance)
-        G.add_edge(source, target, weight=distance)
-        maximal_distance = distance if distance > maximal_distance else maximal_distance
+        for d, j in zip(_D.ravel(), _I.ravel()):
+            if last + i != j:
+                words[index2triple[j]] = d
+
+        for target, distance in words.most_common(args.neighbors):
+            # FIXME: our vectors are normalized, but the distance is greater than 1
+            distance = float(distance)
+            G.add_edge(source, target, weight=distance)
+            maximal_distance = distance if distance > maximal_distance else maximal_distance
 
 for _, _, d in G.edges(data=True):
     d['weight'] = maximal_distance / d['weight']
