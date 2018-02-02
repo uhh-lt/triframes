@@ -1,7 +1,7 @@
-#!/bin/bash -ex
+#!/bin/bash -x
 
 export LANG=en_US.UTF-8 LC_COLLATE=C
-set -o pipefail -x
+set -o pipefail -e
 
 export CLASSPATH=../watset-java/target/watset.jar
 export WEIGHT=0
@@ -9,7 +9,7 @@ export WEIGHT=0
 for setup in triples triples-prepless; do
   export VSO=depcc-common-$setup.tsv
 
-  GOLD=fn-common-$setup.tsv
+  GOLD=fn-depcc-$setup.tsv
 
   for K in 10 150 500 1500 3000; do
     make K=$K trikmeans.txt
