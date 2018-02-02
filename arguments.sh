@@ -1,6 +1,5 @@
 #!/bin/sh -x
 
-export LD_PRELOAD=$HOME/OpenBLAS-0.2.20/lib/libopenblas.so.0
 export WEIGHT=0
 
 for setup in triples triples-prepless; do
