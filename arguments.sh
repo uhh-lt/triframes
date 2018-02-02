@@ -5,7 +5,7 @@ set -o pipefail -x
 
 export WEIGHT=0
 
-for setup in triples triples-prepless; do
+for setup in triples-prepless; do
   export VSO=depcc-common-$setup.tsv
 
   make neighbors-subjects.txt neighbors-predicates.txt neighbors-objects.txt
@@ -13,7 +13,7 @@ for setup in triples triples-prepless; do
   export WATSET="-l cw -lp 'mode=nolog:select=single' -g cw -gp 'select=single'"
   make neighbors-objects-watset.tsv neighbors-predicates-watset.tsv neighbors-subjects-watset.tsv
   make arguments.txt
-  DATA=arguments-nolog_single-single-$setup.txt
+  DATA=arguments-nolog_single-single-$setup
   GOLD=fn-common-$setup.tsv
   mv arguments.txt $DATA.txt
   nice groovy -classpath ../watset-java/target/watset.jar 'fi/eval/triframes_nmpu.groovy' -t "$DATA.txt" "$GOLD" | tee "$DATA.nmpu"
@@ -21,7 +21,7 @@ for setup in triples triples-prepless; do
   export WATSET="-l cw -lp 'mode=nolog' -g cw -gp 'mode=nolog'"
   make neighbors-objects-watset.tsv neighbors-predicates-watset.tsv neighbors-subjects-watset.tsv
   make arguments.txt
-  DATA=arguments-nolog-nolog-$setup.txt
+  DATA=arguments-nolog-nolog-$setup
   GOLD=fn-common-$setup.tsv
   mv arguments.txt $DATA.txt
   nice groovy -classpath ../watset-java/target/watset.jar 'fi/eval/triframes_nmpu.groovy' -t "$DATA.txt" "$GOLD" | tee "$DATA.nmpu"
@@ -29,7 +29,7 @@ for setup in triples triples-prepless; do
   export WATSET="-l cw -lp 'mode=nolog:select=single' -g cw -gp 'mode=nolog'"
   make neighbors-objects-watset.tsv neighbors-predicates-watset.tsv neighbors-subjects-watset.tsv
   make arguments.txt
-  DATA=arguments-nolog_single-nolog-$setup.txt
+  DATA=arguments-nolog_single-nolog-$setup
   GOLD=fn-common-$setup.tsv
   mv arguments.txt $DATA.txt
   nice groovy -classpath ../watset-java/target/watset.jar 'fi/eval/triframes_nmpu.groovy' -t "$DATA.txt" "$GOLD" | tee "$DATA.nmpu"
@@ -37,7 +37,7 @@ for setup in triples triples-prepless; do
   export WATSET="-l cw -lp 'mode=nolog' -g cw -gp 'mode=nolog:select=single'"
   make neighbors-objects-watset.tsv neighbors-predicates-watset.tsv neighbors-subjects-watset.tsv
   make arguments.txt
-  DATA=arguments-nolog-nolog_single-$setup.txt
+  DATA=arguments-nolog-nolog_single-$setup
   GOLD=fn-common-$setup.tsv
   mv arguments.txt $DATA.txt
   nice groovy -classpath ../watset-java/target/watset.jar 'fi/eval/triframes_nmpu.groovy' -t "$DATA.txt" "$GOLD" | tee "$DATA.nmpu"
@@ -45,7 +45,7 @@ for setup in triples triples-prepless; do
   export WATSET="-l mcl -g cw -gp 'mode=nolog:select=single'"
   make neighbors-objects-watset.tsv neighbors-predicates-watset.tsv neighbors-subjects-watset.tsv
   make arguments.txt
-  DATA=arguments-mcl-nolog_singl-$setup.txt
+  DATA=arguments-mcl-nolog_single-$setup
   GOLD=fn-common-$setup.tsv
   mv arguments.txt $DATA.txt
   nice groovy -classpath ../watset-java/target/watset.jar 'fi/eval/triframes_nmpu.groovy' -t "$DATA.txt" "$GOLD" | tee "$DATA.nmpu"
