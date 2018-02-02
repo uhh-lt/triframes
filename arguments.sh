@@ -1,5 +1,8 @@
 #!/bin/sh -x
 
+export LANG=en_US.UTF-8 LC_COLLATE=C
+set -o pipefail -x
+
 export WEIGHT=0
 
 for setup in triples triples-prepless; do
