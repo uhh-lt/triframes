@@ -33,7 +33,7 @@ def delete_header(input_fpath, output_fpath):
         fout.writelines(data)
 
         
-def exract_bow(old_field, new_field):
+def exract_bow(df, old_field, new_field):
     df[new_field] = df[old_field].apply(lambda x: x
                                        .replace("<","")
                                        .replace(">","")
@@ -45,15 +45,15 @@ def exract_bow(old_field, new_field):
     return df
 
 
-def noac2eval_format(noac_dir):
+def run(noac_dir):
     for noac_fpath in glob(join(noac_dir,"*_no.txt")):
         csv_fpath = noac_fpath.replace(" ", "").replace(",","-") + ".tsv" 
         delete_header(noac_fpath, csv_fpath)
 
         df = read_csv(csv_fpath, sep="\t", encoding="utf8")
-        df = exract_bow("Extent", "predicates")
-        df = exract_bow("Intent", "subjects")
-        df = exract_bow("Modus", "objects")
+        df = exract_bow(df, "Extent", "predicates")
+        df = exract_bow(df, "Intent", "subjects")
+        df = exract_bow(df, "Modus", "objects")
 
         output_fpath = csv_fpath + ".arguments.tsv"
         with codecs.open(output_fpath, "w", "utf-8") as out:
