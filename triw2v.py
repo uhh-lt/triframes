@@ -12,9 +12,6 @@ from chinese_whispers import chinese_whispers, aggregate_clusters
 
 from roles import triples
 
-STOP = {'i', 'he', 'she', 'it', 'they', 'you', 'this', 'we', 'them', 'their', 'us', 'my', 'those', 'who', 'what',
-        'that', 'which', 'each', 'some', 'me', 'one', 'the'}
-
 
 def grouper(iterable, n, fillvalue=None):
     "Collect data into fixed-length chunks or blocks"
@@ -38,7 +35,7 @@ w2v = Pyro4.Proxy(args.w2v)
 
 spos, _ = triples(args.triples, min_weight=args.min_weight, build_index=False)
 
-vocabulary = {word for triple in spos for word in (triple.subject, triple.predicate, triple.object)} - STOP
+vocabulary = {word for triple in spos for word in (triple.subject, triple.predicate, triple.object)}
 
 vectors = {}
 
