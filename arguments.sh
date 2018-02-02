@@ -3,10 +3,10 @@
 export LD_PRELOAD=$HOME/OpenBLAS-0.2.20/lib/libopenblas.so.0
 export WEIGHT=0
 
-make neighbors-subjects.txt neighbors-predicates.txt neighbors-objects.txt
-
 for setup in triples triples-prepless; do
   export VSO=depcc-common-$setup.tsv
+
+  make neighbors-subjects.txt neighbors-predicates.txt neighbors-objects.txt
 
   export WATSET="-l cw -lp 'mode=nolog:select=single' -g cw -gp 'select=single'"
   make neighbors-objects-watset.tsv neighbors-predicates-watset.tsv neighbors-subjects-watset.tsv
