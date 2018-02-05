@@ -18,6 +18,7 @@ def options = new CliBuilder().with {
     usage = 'verbs_nmpu.groovy arguments.txt[.gz] korhonen2003.poly.txt[.gz]'
 
     t 'tabular format'
+    p 'percentage format'
 
     parse(args) ?: System.exit(1)
 }
@@ -94,8 +95,14 @@ actual = arguments(Paths.get(options.arguments()[0]), expected)
 nmpu = new NormalizedModifiedPurity<>(transform(actual), transform(expected))
 result = nmpu.get()
 
+format = options.p ? '%.2f\t%.2f\t%.2f\n' : '%.5f\t%.5f\t%.5f\n'
+
+nmpu = result.precision * (options.p ? 100 : 1)
+nipu = result.recall * (options.p ? 100 : 1)
+f1 = result.f1Score * (options.p ? 100 : 1)
+
 if (options.t) {
-    printf('%.5f\t%.5f\t%.5f\n', result.precision, result.recall, result.f1Score)
+    printf(format, nmpu, nipu, f1)
 } else {
-    printf("nmPU/niPU/F1: %.5f\t%.5f\t%.5f\n", result.precision, result.recall, result.f1Score)
+    printf('nmPU/niPU/F1: ' + format, nmpu, nipu, f1)
 }
