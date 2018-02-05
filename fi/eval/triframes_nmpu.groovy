@@ -84,6 +84,7 @@ def arguments(path) {
 
         if (matcher.find()) {
             clusters[id].addAll(matcher.group(2).split(", ").collect { new Element('object', it) })
+            return
         }
     }
 
