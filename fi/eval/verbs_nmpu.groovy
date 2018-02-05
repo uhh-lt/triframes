@@ -92,7 +92,7 @@ nmpu = new NormalizedModifiedPurity<>(transform(actual), transform(expected))
 result = nmpu.get()
 
 if (options.t) {
-    printf('%.5f\t%.5f\t%.5f\t', result.precision, result.recall, result.f1Score)
+    printf('%.5f\t%.5f\t%.5f\n', result.precision, result.recall, result.f1Score)
 } else {
     printf("nmPU/niPU/F1: %.5f\t%.5f\t%.5f\n", result.precision, result.recall, result.f1Score)
 }
