@@ -39,32 +39,6 @@ def lines(path) {
     }
 }
 
-def arguments(path) {
-    clusters = new HashMap<String, Set<String>>()
-
-    id = null
-
-    lines(path).each { line ->
-        if (line.empty) return
-
-        matcher = CLUSTER.matcher(line)
-
-        if (matcher.find()) {
-            id = matcher.group(1)
-            clusters[id] = new HashSet<String>()
-            return
-        }
-
-        matcher = PREDICATES.matcher(line)
-
-        if (matcher.find()) {
-            clusters[id].addAll(matcher.group(1).split(", "))
-            return
-        }
-    }
-
-    return clusters.values()
-}
 
 TAB = Pattern.compile('\t+')
 
@@ -84,9 +58,38 @@ def korhonen(path) {
     return clusters
 }
 
-actual = arguments(Paths.get(options.arguments()[0]))
+def arguments(path, expected) {
+    lexicon = expected.flatten().toSet()
+
+    clusters = new HashMap<String, Set<String>>()
+
+    id = null
+
+    lines(path).each { line ->
+        if (line.empty) return
+
+        matcher = CLUSTER.matcher(line)
+
+        if (matcher.find()) {
+            id = matcher.group(1)
+            return
+        }
+
+        matcher = PREDICATES.matcher(line)
+
+        if (matcher.find()) {
+            words = matcher.group(1).split(", ").grep(lexicon).toSet()
+            if (!words.isEmpty()) clusters[id] = words
+            return
+        }
+    }
+
+    return clusters.values()
+}
 
 expected = korhonen(Paths.get(options.arguments()[1]))
+
+actual = arguments(Paths.get(options.arguments()[0]), expected)
 
 nmpu = new NormalizedModifiedPurity<>(transform(actual), transform(expected))
 result = nmpu.get()
