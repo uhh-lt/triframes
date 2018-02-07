@@ -21,7 +21,7 @@ for setup in triples triples-prepless; do
     mv triw2v-watset.txt $DATA.txt
     nice groovy 'fi/eval/triframes_nmpu.groovy' -t "$DATA.txt" "$GOLD" | tee "$DATA.nmpu"
 
-    make triw2v-watset.txt N=$N WATSET="-l mcl -g mcl-bin -gp bin=/home/dustalov/mcl-14-137/bin/mcl"
+    make triw2v-watset.txt N=$N WATSET="-l mcl -g mcl-bin -gp bin=../mcl-14-137/bin/mcl"
     DATA=triw2v-watset-n$N-mcl-mcl-$setup
     mv triw2v-watset.txt $DATA.txt
     nice groovy 'fi/eval/triframes_nmpu.groovy' -t "$DATA.txt" "$GOLD" | tee "$DATA.nmpu"
