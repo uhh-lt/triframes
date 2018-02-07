@@ -22,7 +22,7 @@ def grouper(iterable, n, fillvalue=None):
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--neighbors', '-n', type=int, default=10)
-parser.add_argument('--min-weight', type=float, default=1000.)
+parser.add_argument('--min-weight', type=float, default=0.)
 parser.add_argument('--w2v', default='PYRO:w2v@localhost:9090')
 parser.add_argument('--pickle', type=argparse.FileType('wb'))
 parser.add_argument('triples', type=argparse.FileType('r', encoding='UTF-8'))
@@ -70,11 +70,9 @@ for slice in grouper(range(X.shape[0]), 2048):
 
         for d, j in zip(_D.ravel(), _I.ravel()):
             if last + i != j:
-                words[index2triple[j]] = d
+                words[index2triple[j]] = float(d)
 
         for target, distance in words.most_common(args.neighbors):
-            # FIXME: our vectors are normalized, but the distance is greater than 1
-            distance = float(distance)
             G.add_edge(source, target, weight=distance)
             maximal_distance = distance if distance > maximal_distance else maximal_distance
 
