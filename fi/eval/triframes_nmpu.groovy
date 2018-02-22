@@ -20,6 +20,7 @@ def options = new CliBuilder().with {
     usage = 'triframes_nmpu.groovy arguments.txt[.gz] fn-depcc-triples.tsv[.gz]'
 
     t 'tabular format'
+    p 'percentage format'
 
     parse(args) ?: System.exit(1)
 }
@@ -84,6 +85,7 @@ def arguments(path) {
 
         if (matcher.find()) {
             clusters[id].addAll(matcher.group(2).split(", ").collect { new Element('object', it) })
+            return
         }
     }
 
@@ -122,13 +124,18 @@ actual = arguments(Paths.get(options.arguments()[0]))
 
 expected = framenet(Paths.get(options.arguments()[1]))
 
+format = options.p ? '%.2f\t%.2f\t%.2f' : '%.5f\t%.5f\t%.5f'
+
 nmpu = new NormalizedModifiedPurity<Element>(transform(actual), transform(expected))
 result = nmpu.get()
+nmpu = result.precision * (options.p ? 100 : 1)
+nipu = result.recall * (options.p ? 100 : 1)
+f1 = result.f1Score * (options.p ? 100 : 1)
 
 if (options.t) {
-    printf('%.5f\t%.5f\t%.5f\t', result.precision, result.recall, result.f1Score)
+    printf(format + '\t', nmpu, nipu, f1)
 } else {
-    printf("Triframe  nmPU/niPU/F1: %.5f\t%.5f\t%.5f\n", result.precision, result.recall, result.f1Score)
+    printf('Triframe  nmPU/niPU/F1: ' + format + '\n', nmpu, nipu, f1)
 }
 
 def extract(frames, type) {
@@ -140,11 +147,14 @@ expected_predicates = extract(expected, 'predicate')
 
 nmpu = new NormalizedModifiedPurity<String>(transform(actual_predicates), transform(expected_predicates))
 result = nmpu.get()
+nmpu = result.precision * (options.p ? 100 : 1)
+nipu = result.recall * (options.p ? 100 : 1)
+f1 = result.f1Score * (options.p ? 100 : 1)
 
 if (options.t) {
-    printf('%.5f\t%.5f\t%.5f\t', result.precision, result.recall, result.f1Score)
+    printf(format + '\t', nmpu, nipu, f1)
 } else {
-    printf("Predicate nmPU/niPU/F1: %.5f\t%.5f\t%.5f\n", result.precision, result.recall, result.f1Score)
+    printf('Predicate nmPU/niPU/F1: ' + format + '\n', nmpu, nipu, f1)
 }
 
 actual_subjects = extract(actual, 'subject')
@@ -152,11 +162,14 @@ expected_subjects = extract(expected, 'subject')
 
 nmpu = new NormalizedModifiedPurity<String>(transform(actual_subjects), transform(expected_subjects))
 result = nmpu.get()
+nmpu = result.precision * (options.p ? 100 : 1)
+nipu = result.recall * (options.p ? 100 : 1)
+f1 = result.f1Score * (options.p ? 100 : 1)
 
 if (options.t) {
-    printf('%.5f\t%.5f\t%.5f\t', result.precision, result.recall, result.f1Score)
+    printf(format + '\t', nmpu, nipu, f1)
 } else {
-    printf("Subject   nmPU/niPU/F1: %.5f\t%.5f\t%.5f\n", result.precision, result.recall, result.f1Score)
+    printf('Subject   nmPU/niPU/F1: ' + format + '\n', nmpu, nipu, f1)
 }
 
 actual_objects = extract(actual, 'object')
@@ -164,9 +177,12 @@ expected_objects = extract(expected, 'object')
 
 nmpu = new NormalizedModifiedPurity<String>(transform(actual_objects), transform(expected_objects))
 result = nmpu.get()
+nmpu = result.precision * (options.p ? 100 : 1)
+nipu = result.recall * (options.p ? 100 : 1)
+f1 = result.f1Score * (options.p ? 100 : 1)
 
 if (options.t) {
-    printf('%.5f\t%.5f\t%.5f\n', result.precision, result.recall, result.f1Score)
+    printf(format + '\n', nmpu, nipu, f1)
 } else {
-    printf("Object    nmPU/niPU/F1: %.5f\t%.5f\t%.5f\n", result.precision, result.recall, result.f1Score)
+    printf('Object    nmPU/niPU/F1: ' + format + '\n', nmpu, nipu, f1)
 }

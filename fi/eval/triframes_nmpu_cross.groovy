@@ -100,6 +100,7 @@ def arguments(path) {
 
         if (matcher.find()) {
             clusters[id].objects = matcher.group(2).split(", ")
+            return
         }
     }
 

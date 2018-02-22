@@ -12,9 +12,6 @@ from chinese_whispers import chinese_whispers, aggregate_clusters
 
 from roles import triples
 
-STOP = {'i', 'he', 'she', 'it', 'they', 'you', 'this', 'we', 'them', 'their', 'us', 'my', 'those', 'who', 'what',
-        'that', 'which', 'each', 'some', 'me', 'one', 'the'}
-
 
 def grouper(iterable, n, fillvalue=None):
     "Collect data into fixed-length chunks or blocks"
@@ -25,7 +22,7 @@ def grouper(iterable, n, fillvalue=None):
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--neighbors', '-n', type=int, default=10)
-parser.add_argument('--min-weight', type=float, default=1000.)
+parser.add_argument('--min-weight', type=float, default=0.)
 parser.add_argument('--w2v', default='PYRO:w2v@localhost:9090')
 parser.add_argument('--pickle', type=argparse.FileType('wb'))
 parser.add_argument('triples', type=argparse.FileType('r', encoding='UTF-8'))
@@ -38,7 +35,7 @@ w2v = Pyro4.Proxy(args.w2v)
 
 spos, _ = triples(args.triples, min_weight=args.min_weight, build_index=False)
 
-vocabulary = {word for triple in spos for word in (triple.subject, triple.predicate, triple.object)} - STOP
+vocabulary = {word for triple in spos for word in (triple.subject, triple.predicate, triple.object)}
 
 vectors = {}
 
@@ -57,25 +54,27 @@ for i, triple in enumerate(spos):
 knn = faiss.IndexFlatIP(X.shape[1])
 knn.add(X)
 
-D, I = knn.search(X, args.neighbors + 1)
+G, maximal_distance = nx.Graph(), -1
 
-G = nx.Graph()
+for slice in grouper(range(X.shape[0]), 2048):
+    slice = [j for j in slice if j is not None]
 
-maximal_distance = -1
+    D, I = knn.search(X[slice, :], args.neighbors + 1)
 
-for i, (_D, _I) in enumerate(zip(D, I)):
-    source = index2triple[i]
-    words = Counter()
+    last = min(slice)
+    print('%d / %d' % (last, X.shape[0]), file=sys.stderr)
 
-    for d, j in zip(_D.ravel(), _I.ravel()):
-        if i != j:
-            words[index2triple[j]] = d
+    for i, (_D, _I) in enumerate(zip(D, I)):
+        source = index2triple[last + i]
+        words = Counter()
 
-    for target, distance in words.most_common(args.neighbors):
-        # FIXME: our vectors are normalized, but the distance is greater than 1
-        distance = float(distance)
-        G.add_edge(source, target, weight=distance)
-        maximal_distance = distance if distance > maximal_distance else maximal_distance
+        for d, j in zip(_D.ravel(), _I.ravel()):
+            if last + i != j:
+                words[index2triple[j]] = float(d)
+
+        for target, distance in words.most_common(args.neighbors):
+            G.add_edge(source, target, weight=distance)
+            maximal_distance = distance if distance > maximal_distance else maximal_distance
 
 for _, _, d in G.edges(data=True):
     d['weight'] = maximal_distance / d['weight']
