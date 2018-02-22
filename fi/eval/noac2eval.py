@@ -46,7 +46,7 @@ def exract_bow(df, old_field, new_field):
 
 
 def run(noac_dir):
-    for noac_fpath in glob(join(noac_dir,"*_no.txt")):
+    for noac_fpath in glob(join(noac_dir,"*.txt")):
         csv_fpath = noac_fpath.replace(" ", "").replace(",","-") + ".tsv" 
         delete_header(noac_fpath, csv_fpath)
 
