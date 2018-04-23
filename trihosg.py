@@ -25,14 +25,14 @@ def grouper(iterable, n, fillvalue=None):
 parser = argparse.ArgumentParser()
 parser.add_argument('--neighbors', '-n', type=int, default=10)
 parser.add_argument('--pickle', type=argparse.FileType('wb'))
-parser.add_argument('contexts', type=argparse.FileType('rb'))
 parser.add_argument('words', type=argparse.FileType('rb'))
+parser.add_argument('contexts', type=argparse.FileType('rb'))
 parser.add_argument('relations', type=argparse.FileType('rb'))
 parser.add_argument('triples', type=argparse.FileType('rb'))
 args = parser.parse_args()
 
-contextmodel = KeyedVectors.load_word2vec_format(args.contexts, binary=False)
 wordmodel = KeyedVectors.load_word2vec_format(args.words, binary=False)
+contextmodel = KeyedVectors.load_word2vec_format(args.contexts, binary=False)
 relationmodel = KeyedVectors.load_word2vec_format(args.relations, binary=False)
 
 spos = set()
@@ -51,11 +51,20 @@ with gzip.open(args.triples) as f:
 spos = list(spos)
 
 index2triple = {}
-X = np.empty((len(spos), wordmodel.vector_size * 3), 'float32')
+X = np.empty((len(spos), wordmodel.vector_size + contextmodel.vector_size + relationmodel.vector_size), 'float32')
 
 for i, (verb, subject, object) in enumerate(spos):
-    X[i] = np.concatenate((wordmodel[verb], contextmodel[subject], relationmodel[object]))
-    index2triple[i] = (extract(verb), extract(subject), extract(object))
+    # This changes order from VSO to SVO because I use it everywhere.
+    j = 0
+    X[i, j:j + contextmodel.vector_size] = contextmodel[subject]
+
+    j += contextmodel.vector_size
+    X[i, j:j + wordmodel.vector_size] = wordmodel[verb]
+
+    j += wordmodel.vector_size
+    X[i, j:j + relationmodel.vector_size] = relationmodel[object]
+
+    index2triple[i] = (extract(subject), extract(verb), extract(object))
 
 knn = faiss.IndexFlatIP(X.shape[1])
 knn.add(X)
@@ -97,8 +106,8 @@ clusters = aggregate_clusters(G)
 for label, cluster in sorted(aggregate_clusters(G).items(), key=lambda e: len(e[1]), reverse=True):
     print('# Cluster %d\n' % label)
 
-    predicates = {predicate for predicate, _, _ in cluster}
-    subjects = {subject for _, subject, _ in cluster}
+    subjects = {subject for subject, _, _ in cluster}
+    predicates = {predicate for _, predicate, _ in cluster}
     objects = {object for _, _, object in cluster}
 
     print('Predicates: %s' % ', '.join(predicates))
