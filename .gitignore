@@ -107,3 +107,4 @@ ENV/
 *.txt
 *.tsv
 *.csv
+*.swp
