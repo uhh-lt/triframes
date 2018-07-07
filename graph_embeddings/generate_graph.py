@@ -6,10 +6,18 @@ import numpy as np
 
 lines_to_read = 100
 
-def extract_connections(df, node):
-    array = np.full((len(df.index.values), 2), node, dtype=int)
-    array[:, 1] = np.array(df.index.values)
-    return tuple(map(tuple, array))
+def get_pairs(df, col1, col2):
+    sub = df[df.duplicated(subset=[col1, col2], keep=False)]
+    grp_by = sub.groupby([col1, col2])
+    pairs = []
+    for i, group in enumerate(grp_by.groups):
+        try:
+            grp = grp_by.get_group(group)
+            if len(grp) > 1:
+                pairs += list(itertools.combinations(grp.index.values, 2))
+        except KeyError:
+            print("KeyError")
+    return pairs
 
 #read data
 df = pd.read_csv("vso-1.3m-pruned-strict.csv", delimiter="\t", header=None,  nrows=lines_to_read)
@@ -27,20 +35,11 @@ for index, row in df.iterrows():
 print("Done")
 
 #add edges
-print("Adding edges...")
-for node in G.nodes():
-    print("Analyzing node: ", node)
-    # verb-subject co-occurrences
-    sub = df.loc[(df['verb'] == G.node[node]['verb']) & (df['subject'] == G.node[node]['subject'])]
-    if len(sub.index) > 1:
-        edges += extract_connections(sub, node)
+edges += get_pairs(df, 'verb','subject')
+edges += get_pairs(df, 'verb','object')
+edges += get_pairs(df, 'object','subject')
 
-    # subject-object co-occurrences
-    sub = df.loc[(df['subject'] == G.node[node]['subject']) & (df['object'] == G.node[node]['object'])]
-    if len(sub.index) > 1:
-        edges += extract_connections(sub, node)
 G.add_edges_from(edges)
-print("Done")
 
 # graph info
 print ("nodes: ", G.number_of_nodes())
@@ -50,8 +49,8 @@ print ("edges: ", G.number_of_edges())
 nx.write_adjlist(G, "triframes.adjlist")
 
 #plot graph
-c = CircosPlot(G, node_labels=True)
-c.draw()
-plt.show()
+#c = CircosPlot(G, node_labels=True)
+#c.draw()
+#plt.show()
 
 
