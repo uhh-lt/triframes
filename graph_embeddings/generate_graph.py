@@ -3,8 +3,9 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from nxviz.plots import CircosPlot
 import numpy as np
+import itertools
 
-lines_to_read = 100
+lines_to_read = 100000
 
 def get_pairs(df, col1, col2):
     sub = df[df.duplicated(subset=[col1, col2], keep=False)]
