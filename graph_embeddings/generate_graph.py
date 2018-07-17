@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 from nxviz.plots import CircosPlot
 import numpy as np
 import itertools
+import pickle
+
 
 lines_to_read = 100000
 
@@ -29,10 +31,13 @@ df = df.reset_index()
 G=nx.Graph()
 edges = []
 
+dictionary_id_to_name = {}
+
 #add vertices
 print("Adding vertices...")
 for index, row in df.iterrows():
     G.add_node(index, verb=row['verb'], subject=row['subject'], object=row['object'])
+    dictionary_id_to_name[str(index)] = row
 print("Done")
 
 #add edges
@@ -48,6 +53,10 @@ print ("edges: ", G.number_of_edges())
 
 #save graph
 nx.write_adjlist(G, "triframes.adjlist")
+
+#save dictionary with id mapping
+with open('id_to_name.pkl', 'wb') as f:
+    pickle.dump(dictionary_id_to_name, f, pickle.HIGHEST_PROTOCOL)
 
 #plot graph
 #c = CircosPlot(G, node_labels=True)
