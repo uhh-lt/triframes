@@ -108,5 +108,8 @@ ENV/
 *.tsv
 *.csv
 *.swp
+*.nmpu
+*.pkl
+*.ipynb
 
 Makefile.local
