@@ -14,13 +14,7 @@ import numpy as np
 from chinese_whispers import chinese_whispers, aggregate_clusters
 from gensim.models import KeyedVectors
 
-
-def grouper(iterable, n, fillvalue=None):
-    "Collect data into fixed-length chunks or blocks"
-    # grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx"
-    args = [iter(iterable)] * n
-    return zip_longest(*args, fillvalue=fillvalue)
-
+from utils import grouper
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--neighbors', '-n', type=int, default=10)

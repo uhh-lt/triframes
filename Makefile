@@ -7,56 +7,7 @@ WEIGHT ?= 10
 
 -include Makefile.local
 
-all: roles.txt multimodal.txt distinct.txt
-
-.PHONY: roles.txt
-roles.txt:
-	nice ./roles.py --cw=log --min-weight=$(WEIGHT) ../verb-clusters/framenet-childfree.tsv $(VSO) | tee roles.txt
-
-.PHONY: multimodal.txt
-multimodal.txt:
-	nice ./multimodal.py --cw=log --min-weight=$(WEIGHT) $(VSO) | tee multimodal.txt
-
-.PHONY: distinct.txt
-distinct.txt:
-	nice ./distinct.py --cw=log --min-weight=$(WEIGHT) $(VSO) | tee distinct.txt
-
-.PHONY: multimodal-watset.txt
-multimodal-watset.txt:
-	nice ./multimodal-graph.py --min-weight=$(WEIGHT) $(VSO) > multimodal-graph.txt
-	nice java -jar ../watset-java/target/watset.jar -i multimodal-graph.txt -o multimodal-watset.tsv watset -l cw -lp mode=nolog -g cw
-	nice ./multimodal-pretty.awk multimodal-watset.tsv > multimodal-watset.txt
-
-.PHONY: neighbors-subjects.txt
-neighbors-subjects.txt:
-	PYTHONPATH=../faiss nice ./neighbors.py --element=subject --min-weight=$(WEIGHT) $(VSO) >neighbors-subjects.txt
-	sort -o neighbors-subjects.txt neighbors-subjects.txt
-
-.PHONY: neighbors-predicates.txt
-neighbors-predicates.txt:
-	PYTHONPATH=../faiss nice ./neighbors.py --element=predicate --min-weight=$(WEIGHT) $(VSO) >neighbors-predicates.txt
-	sort -o neighbors-predicates.txt neighbors-predicates.txt
-
-.PHONY: neighbors-objects.txt
-neighbors-objects.txt:
-	PYTHONPATH=../faiss nice ./neighbors.py --element=object --min-weight=$(WEIGHT) $(VSO) >neighbors-objects.txt
-	sort -o neighbors-objects.txt neighbors-objects.txt
-
-.PHONY: neighbors-subjects-watset.tsv
-neighbors-subjects-watset.tsv:
-	nice java -jar ../watset-java/target/watset.jar -i neighbors-subjects.txt -o neighbors-subjects-watset.tsv watset -l cw -lp mode=nolog -g cw
-
-.PHONY: neighbors-predicates-watset.tsv
-neighbors-predicates-watset.tsv:
-	nice java -jar ../watset-java/target/watset.jar -i neighbors-predicates.txt -o neighbors-predicates-watset.tsv watset -l cw -lp mode=nolog -g cw
-
-.PHONY: neighbors-objects-watset.tsv
-neighbors-objects-watset.tsv:
-	nice java -jar ../watset-java/target/watset.jar -i neighbors-objects.txt -o neighbors-objects-watset.tsv watset -l cw -lp mode=nolog -g cw
-
-.PHONY: arguments.txt
-arguments.txt:
-	nice ./arguments.py --min-weight=$(WEIGHT) $(VSO) neighbors-subjects-watset.tsv neighbors-predicates-watset.tsv neighbors-objects-watset.tsv > arguments.txt
+triframes: triw2v.txt triw2v-watset.txt
 
 N ?= 10
 

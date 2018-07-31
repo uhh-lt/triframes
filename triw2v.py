@@ -1,37 +1,27 @@
 #!/usr/bin/env python
 
 import argparse
+import sys
 from collections import Counter
-from itertools import zip_longest
 
 import faiss
 import networkx as nx
 import numpy as np
-import sys
 from chinese_whispers import chinese_whispers, aggregate_clusters
 
-from roles import triples
-
-
-def grouper(iterable, n, fillvalue=None):
-    "Collect data into fixed-length chunks or blocks"
-    # grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx"
-    args = [iter(iterable)] * n
-    return zip_longest(*args, fillvalue=fillvalue)
-
+from utils import triples, grouper, word_vectors
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--neighbors', '-n', type=int, default=10)
 parser.add_argument('--min-weight', type=float, default=0.)
-parser.add_argument('--w2v', default='PYRO:w2v@localhost:9090')
 parser.add_argument('--pickle', type=argparse.FileType('wb'))
 parser.add_argument('triples', type=argparse.FileType('r', encoding='UTF-8'))
+group = parser.add_mutually_exclusive_group()
+group.add_argument('--w2v', default=None, type=argparse.FileType('rb'))
+group.add_argument('--pyro', default=None, type=str)
 args = parser.parse_args()
 
-import Pyro4
-
-Pyro4.config.SERIALIZER = 'pickle'  # see the Disclaimer
-w2v = Pyro4.Proxy(args.w2v)
+w2v = word_vectors(args, lambda args: parser.error('Please set the --w2v or --pyro option.'))
 
 spos, _ = triples(args.triples, min_weight=args.min_weight, build_index=False)
 
@@ -45,6 +35,7 @@ for words in grouper(vocabulary, 512):
 spos = [triple for triple in spos if
         triple.subject in vectors and triple.predicate in vectors and triple.object in vectors]
 
+# noinspection PyUnboundLocalVariable
 X, index2triple = np.empty((len(spos), w2v.vector_size * 3), 'float32'), {}
 
 for i, triple in enumerate(spos):
@@ -81,6 +72,7 @@ for _, _, d in G.edges(data=True):
 
 if args.pickle is not None:
     import pickle
+
     pickle.dump(list(G.edges(data=True)), args.pickle, protocol=3)
     sys.exit(0)
 

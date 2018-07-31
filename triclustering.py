@@ -1,24 +1,15 @@
 #!/usr/bin/env python
 
 import argparse
-from itertools import zip_longest
+from collections import defaultdict
 
 import numpy as np
-from collections import defaultdict
 from sklearn.cluster import KMeans, SpectralClustering, DBSCAN
 
-from roles import triples
+from utils import word_vectors, triples, grouper
 
 STOP = {'i', 'he', 'she', 'it', 'they', 'you', 'this', 'we', 'them', 'their', 'us', 'my', 'those', 'who', 'what',
         'that', 'which', 'each', 'some', 'me', 'one', 'the'}
-
-
-def grouper(iterable, n, fillvalue=None):
-    "Collect data into fixed-length chunks or blocks"
-    # grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx"
-    args = [iter(iterable)] * n
-    return zip_longest(*args, fillvalue=fillvalue)
-
 
 METHODS = {
     'kmeans': KMeans,
@@ -28,16 +19,15 @@ METHODS = {
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--min-weight', type=float, default=1000.)
-parser.add_argument('--w2v', default='PYRO:w2v@localhost:9090')
 parser.add_argument('--method', choices=METHODS.keys(), default='kmeans')
 parser.add_argument('-k', type=int, default=10)
 parser.add_argument('triples', type=argparse.FileType('r', encoding='UTF-8'))
+group = parser.add_mutually_exclusive_group()
+group.add_argument('--w2v', default=None, type=argparse.FileType('rb'))
+group.add_argument('--pyro', default=None, type=str)
 args = parser.parse_args()
 
-import Pyro4
-
-Pyro4.config.SERIALIZER = 'pickle'  # see the Disclaimer
-w2v = Pyro4.Proxy(args.w2v)
+w2v = word_vectors(args, lambda args: parser.error('Please set the --w2v or --pyro option.'))
 
 spos, _ = triples(args.triples, min_weight=args.min_weight, build_index=False)
 
@@ -57,7 +47,8 @@ for i, triple in enumerate(spos):
     X[i] = np.concatenate((vectors[triple.subject], vectors[triple.predicate], vectors[triple.object]))
     index2triple[i] = triple
 
-clustering = METHODS[args.method](n_jobs=-2) if args.method == 'dbscan' else METHODS[args.method](n_clusters=args.k, n_jobs=-2)
+clustering = METHODS[args.method](n_jobs=-2) if args.method == 'dbscan' else METHODS[args.method](n_clusters=args.k,
+                                                                                                  n_jobs=-2)
 clusters = clustering.fit_predict(X)
 
 frames = defaultdict(set)
