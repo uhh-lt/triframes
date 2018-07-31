@@ -5,6 +5,16 @@ export CLASSPATH=$(PWD)/watset.jar
 VSO ?= vso-1.3m-pruned-strict.csv
 WEIGHT ?= 10
 
+ifdef W2V
+W2VARG = --w2v=$(W2V)
+else
+ifdef PYRO
+W2VARG = --pyro=$(PYRO)
+else
+W2VARG = --pyro=PYRO:w2v@localhost:9090
+endif
+endif
+
 -include Makefile.local
 
 triframes: triw2v.txt triw2v-watset.txt
@@ -13,7 +23,7 @@ N ?= 10
 
 .PHONY: triw2v.txt
 triw2v.txt:
-	nice ./triw2v.py -n=$(N) --min-weight=$(WEIGHT) $(VSO) > $@
+	nice ./triw2v.py $(W2VARG) -n=$(N) --min-weight=$(WEIGHT) $(VSO) > $@
 
 .PHONY: trihosg.txt
 trihosg.txt:
@@ -23,27 +33,27 @@ WATSET ?= -l cw -lp 'mode=top' -g cw -gp 'mode=top'
 
 .PHONY: triw2v-watset.txt
 triw2v-watset.txt:
-	nice ./triw2v.py -n=$(N) --min-weight=$(WEIGHT) --pickle $(@:txt=pkl) $(VSO)
+	nice ./triw2v.py $(W2VARG) -n=$(N) --min-weight=$(WEIGHT) --pickle $(@:txt=pkl) $(VSO)
 	nice groovy ./triw2v_watset.groovy $(WATSET) $(@:txt=pkl) > $@
 
 .PHONY: trihosg-watset.txt
 trihosg-watset.txt:
-	nice ./trihosg.py -n=$(N) --pickle $(@:txt=pkl) fi/hosg/300-10/{word,context,relation}-matrix fi/hosg/counts.gz
+	nice ./trihosg.py $(W2VARG) -n=$(N) --pickle $(@:txt=pkl) fi/hosg/300-10/{word,context,relation}-matrix fi/hosg/counts.gz
 	nice groovy ./triw2v_watset.groovy $(WATSET) $(@:txt=pkl) > $@
 
 K ?= 10
 
 .PHONY: trikmeans.txt
 trikmeans.txt:
-	nice ./triclustering.py --method=kmeans -k=$(K) --min-weight=$(WEIGHT) $(VSO) > $@
+	nice ./triclustering.py $(W2VARG) --method=kmeans -k=$(K) --min-weight=$(WEIGHT) $(VSO) > $@
 
 .PHONY: trispectral.txt
 trispectral.txt:
-	nice ./triclustering.py --method=spectral -k=$(K) --min-weight=$(WEIGHT) $(VSO) > $@
+	nice ./triclustering.py $(W2VARG) --method=spectral -k=$(K) --min-weight=$(WEIGHT) $(VSO) > $@
 
 .PHONY: tridbscan.txt
 tridbscan.txt:
-	nice ./triclustering.py --method=dbscan --min-weight=$(WEIGHT) $(VSO) > $@
+	nice ./triclustering.py $(W2VARG) --method=dbscan --min-weight=$(WEIGHT) $(VSO) > $@
 
 STOP=(i|he|she|it|they|you|this|we|them|their|us|my|those|who|what|that|which|each|some|me|one|the)
 
