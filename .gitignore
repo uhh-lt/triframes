@@ -111,5 +111,7 @@ ENV/
 *.nmpu
 *.pkl
 *.ipynb
+*.gz
+*.jar
 
 Makefile.local
