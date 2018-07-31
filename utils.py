@@ -64,7 +64,7 @@ def words_vec(w2v, words, use_norm=False):
     """
     Return a dict that maps the given words to their embeddings.
     """
-    if callable(getattr(w2v.wv, 'words_vec', None)):
-        return w2v.wv.words_vec(words, use_norm)
+    if callable(getattr(w2v, 'words_vec', None)):
+        return w2v.words_vec(words, use_norm)
 
     return {word: w2v.wv.word_vec(word, use_norm) for word in words if word in w2v.wv}
