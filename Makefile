@@ -70,3 +70,11 @@ clean:
 watset.jar:
 	rm -fv $@
 	curl -Lo "$@" https://github.com/nlpub/watset-java/releases/download/2.0.0-beta9/watset.jar
+
+data: depcc-common-triples-full.tsv fn-depcc-triples-full.tsv
+
+depcc-common-triples-full.tsv:
+	zcat fi/eval/data/$@.gz > $@
+
+fn-depcc-triples-full.tsv:
+	zcat fi/eval/data/$@.gz > $@
