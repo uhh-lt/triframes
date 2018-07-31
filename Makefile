@@ -67,7 +67,6 @@ clean:
 	rm -fv *.txt *-watset.tsv
 	rm -fv *.nmpu *.nmpu_cross
 
-.PHONY: watset.jar
 watset.jar:
 	curl -Lo "$@" https://github.com/nlpub/watset-java/releases/download/2.0.0-beta9/watset.jar
 
@@ -76,7 +75,6 @@ data: vso-1.3m-pruned-strict.csv depcc-common-triples-full.tsv fn-depcc-triples-
 vso-1.3m-pruned-strict.csv: vso-1.3m-pruned-strict.csv.gz
 	gunzip -kf $< > $@
 
-.PHONY: vso-1.3m-pruned-strict.csv.gz
 vso-1.3m-pruned-strict.csv.gz:
 	curl -Lo "$@" http://panchenko.me/data/joint/verbs/cc16malt/vso-1.3m-pruned-strict.csv.gz
 
