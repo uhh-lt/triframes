@@ -9,7 +9,7 @@ import networkx as nx
 import numpy as np
 from chinese_whispers import chinese_whispers, aggregate_clusters
 
-from utils import triples, grouper, word_vectors
+from utils import triples, grouper, word_vectors, words_vec
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--neighbors', '-n', type=int, default=10)
@@ -30,7 +30,7 @@ vocabulary = {word for triple in spos for word in (triple.subject, triple.predic
 vectors = {}
 
 for words in grouper(vocabulary, 512):
-    vectors.update(w2v.words_vec(words))
+    vectors.update(words_vec(words))
 
 spos = [triple for triple in spos if
         triple.subject in vectors and triple.predicate in vectors and triple.object in vectors]

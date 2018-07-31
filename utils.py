@@ -48,20 +48,23 @@ def triples(f, min_weight=None, build_index=True):
 def word_vectors(args, fallback=lambda x: None):
     if args.w2v:
         from gensim.models import KeyedVectors
-
-        def words_vec(self, words, use_norm=False):
-            return {word: self.wv.word_vec(word, use_norm) for word in words if word in self.wv}
-
         w2v = KeyedVectors.load_word2vec_format(args.w2v, binary=True, unicode_errors='ignore')
         w2v.init_sims(replace=True)
-
-        w2v.words_vec = words_vec
         return w2v
     elif args.pyro:
         import Pyro4
-
         Pyro4.config.SERIALIZER = 'pickle'
         w2v = Pyro4.Proxy(args.pyro)
         return w2v
     else:
         return fallback(args)
+
+
+def words_vec(self, words, use_norm=False):
+    """
+    Return a dict that maps the given words to their embeddings.
+    """
+    if callable(getattr(self.wv, 'words_vec', None)):
+        return self.wv.words_vec(words, use_norm)
+
+    return {word: self.wv.word_vec(word, use_norm) for word in words if word in self.wv}
