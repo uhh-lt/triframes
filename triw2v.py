@@ -30,7 +30,7 @@ vocabulary = {word for triple in spos for word in (triple.subject, triple.predic
 vectors = {}
 
 for words in grouper(vocabulary, 512):
-    vectors.update(words_vec(words))
+    vectors.update(words_vec(w2v, words))
 
 spos = [triple for triple in spos if
         triple.subject in vectors and triple.predicate in vectors and triple.object in vectors]

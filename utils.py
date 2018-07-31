@@ -60,11 +60,11 @@ def word_vectors(args, fallback=lambda x: None):
         return fallback(args)
 
 
-def words_vec(self, words, use_norm=False):
+def words_vec(w2v, words, use_norm=False):
     """
     Return a dict that maps the given words to their embeddings.
     """
-    if callable(getattr(self.wv, 'words_vec', None)):
-        return self.wv.words_vec(words, use_norm)
+    if callable(getattr(w2v.wv, 'words_vec', None)):
+        return w2v.wv.words_vec(words, use_norm)
 
-    return {word: self.wv.word_vec(word, use_norm) for word in words if word in self.wv}
+    return {word: w2v.wv.word_vec(word, use_norm) for word in words if word in w2v.wv}
