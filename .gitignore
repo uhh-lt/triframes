@@ -108,3 +108,5 @@ ENV/
 *.tsv
 *.csv
 *.swp
+
+Makefile.local
