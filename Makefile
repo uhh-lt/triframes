@@ -55,19 +55,11 @@ trispectral.txt:
 tridbscan.txt:
 	nice ./triclustering.py $(W2VARG) --method=dbscan --min-weight=$(WEIGHT) $(VSO) > $@
 
-STOP=(i|he|she|it|they|you|this|we|them|their|us|my|those|who|what|that|which|each|some|me|one|the)
+depcc-common-triples-full-singleton.tsv: depcc-common-triples-full.tsv
+	gawk -f ./baseline-singleton.awk $< > $@
 
-fn-depcc-triples-prepless.tsv:
-	grep -viP '(^$(STOP)|$(STOP)$$)' fn-depcc-triples.tsv > $@
-
-depcc-common-triples-prepless.tsv:
-	grep -viP '\t$(STOP)' depcc-common-triples.tsv > $@
-
-depcc-common-singleton.tsv:
-	gawk -f ./baseline-singleton.awk depcc-common-triples.tsv > $@
-
-depcc-common-whole.tsv:
-	gawk -f ./baseline-whole.awk depcc-common-triples.tsv > $@
+depcc-common-triples-full-whole.tsv: depcc-common-triples-full.tsv
+	gawk -f ./baseline-whole.awk $< > $@
 
 lda-frames.txt:
 	./lda-frames.py ../verb-clusters/lda-frames/data/bnc-export/{frames,roles,verbs}.txt > $@
