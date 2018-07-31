@@ -3,7 +3,7 @@
 export LANG=en_US.UTF-8 LC_COLLATE=C
 set -o pipefail -e
 
-export CLASSPATH=../watset-java/target/watset.jar
+export CLASSPATH=$PWD/watset.jar
 export WEIGHT=0
 
 for setup in triples triples-prepless; do
