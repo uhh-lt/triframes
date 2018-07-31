@@ -93,3 +93,9 @@ depcc-common-triples-full.tsv:
 
 fn-depcc-triples-full.tsv:
 	zcat fi/eval/data/$@.gz > $@
+
+GoogleNews-vectors-negative300.bin: GoogleNews-vectors-negative300.bin.gz
+	gunzip -kf $< > $@
+
+GoogleNews-vectors-negative300.bin.gz:
+	curl -Lo "$@" https://s3.amazonaws.com/dl4j-distribution/GoogleNews-vectors-negative300.bin.gz
