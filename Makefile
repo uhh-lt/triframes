@@ -81,10 +81,10 @@ vso-1.3m-pruned-strict.csv.gz:
 	curl -Lo "$@" http://panchenko.me/data/joint/verbs/cc16malt/vso-1.3m-pruned-strict.csv.gz
 
 depcc-common-triples-full.tsv:
-	zcat fi/eval/data/$@.gz > $@
+	gunzip -c fi/eval/data/$@.gz > $@
 
 fn-depcc-triples-full.tsv:
-	zcat fi/eval/data/$@.gz > $@
+	gunzip -c fi/eval/data/$@.gz > $@
 
 GoogleNews-vectors-negative300.bin: GoogleNews-vectors-negative300.bin.gz
 	gunzip -kf $< > $@
