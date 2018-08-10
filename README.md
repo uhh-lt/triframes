@@ -13,6 +13,8 @@ We use dependency triples automatically extracted from a Web-scale corpus to per
 * [Watset](https://github.com/nlpub/watset-java) (can be installed by `make watset.jar`)
 * [Chinese Whispers](https://github.com/nlpub/chinese-whispers-python) for Python
 
+In case Anaconda is used, Faiss and Gensim can be installed from its repositories, e.g., `conda install gensim faiss-cpu -c pytorch`.
+
 ## Running Triframes
 
 Triframes inputs a set of dependency triples and outputs a set of triframes. The data is processed in two steps. First, a word embedding model is used to create a triple graph. Then, a fuzzy graph clustering algorithm, Watset, is used to extract triple communities representing triframes.
