@@ -8,20 +8,20 @@ We use dependency triples automatically extracted from a Web-scale corpus to per
 * Python ≥ 3.3 ([Anaconda](https://www.anaconda.com/) is recommended)
 * Java ≥ 8
 * Groovy ≥ 2.4
-* [Faiss](https://github.com/facebookresearch/faiss)
-* [Gensim](https://radimrehurek.com/gensim/)
-* [Watset](https://github.com/nlpub/watset-java) (can be installed by `make watset.jar`)
-* [Chinese Whispers](https://github.com/nlpub/chinese-whispers-python) for Python
+* [Faiss](https://github.com/facebookresearch/faiss) (`conda install faiss-cpu -c pytorch` in Anaconda)
+* [Gensim](https://radimrehurek.com/gensim/) (`conda install gensim` in Anaconda)
+* [Watset](https://github.com/nlpub/watset-java) (`make watset.jar`)
+* [Chinese Whispers](https://github.com/nlpub/chinese-whispers-python) for Python (`pip install chinese-whispers`)
 
-In case Anaconda is used, Faiss and Gensim can be installed from its repositories, e.g., `conda install gensim faiss-cpu -c pytorch`.
+On macOS, developer tools must be installed first using `xcode-select --install`.
 
 ## Running Triframes
 
-Triframes inputs a set of dependency triples and outputs a set of triframes. The data is processed in two steps. First, a word embedding model is used to create a triple graph. Then, a fuzzy graph clustering algorithm, Watset, is used to extract triple communities representing triframes.
+Triframes inputs a set of dependency triples and outputs a set of triframes. The data is processed in two steps. First, a word embedding model is used to create a triple graph. Then, a fuzzy graph clustering algorithm, [Watset](https://github.com/nlpub/watset-java), is used to extract triple communities representing triframes.
 
 The input data used in our experiments can be obtained using the `make data` command. Our default input file, `vso-1.3m-pruned-strict.csv`, has four fields: verb, subject, object, weight. Loading the whole file can take a lot of memory, so our scripts support specifying a threshold using the `WEIGHT` environment variable. In our experiments, it is set to zero.
 
-Since Triframes uses word embeddings, it is reasonable to download a model. In our experiments, we used the standard [Google News](https://code.google.com/archive/p/word2vec/) embeddings. In case you do not have them, it is possible to download them using `GoogleNews-vectors-negative300.bin`. There are two ways of specifying which word embeddings Triframes should use:
+Since Triframes uses word embeddings, it is reasonable to download a model. In our experiments, we used the standard [Google News](https://code.google.com/archive/p/word2vec/) embeddings. In case you do not have them, it is possible to download them using `make GoogleNews-vectors-negative300.bin`. There are two ways of specifying which word embeddings Triframes should use:
 
 1. Passing the `W2V=/path/to/embeddings.bin` environment variable to each `make` invocation.
 2. Serving the word vectors via [Word2Vec-Pyro4](https://github.com/nlpub/word2vec-pyro4). This requires passing the `PYRO=PYRO:…@…:9090` environment to each `make` invocation. It is *much* faster than loading the Word2Vec data on every run.
