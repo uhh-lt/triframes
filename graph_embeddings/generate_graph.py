@@ -7,7 +7,8 @@ import itertools
 import pickle
 
 
-lines_to_read = 100000
+lines_to_read = 170000
+lines_to_process = 100000
 
 def get_pairs(df, col1, col2):
     sub = df[df.duplicated(subset=[col1, col2], keep=False)]
@@ -25,6 +26,13 @@ def get_pairs(df, col1, col2):
 #read data
 df = pd.read_csv("vso-1.3m-pruned-strict.csv", delimiter="\t", header=None,  nrows=lines_to_read)
 df.columns = ['verb', 'subject', 'object', 'score']
+df = df.reset_index()
+
+# add column with score sum over the duplicates
+df['sum'] = df.groupby(['verb', 'subject', 'object'])['score'].transform('sum')
+
+# drop duplicates
+df = df.drop_duplicates(subset=['verb', 'subject', 'object', 'sum'])[:lines_to_process]
 df = df.reset_index()
 
 #init graph
