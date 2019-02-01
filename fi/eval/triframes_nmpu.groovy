@@ -128,6 +128,10 @@ purity = new NormalizedModifiedPurity<Element>()
 
 format = options.p ? '%.2f\t%.2f\t%.2f' : '%.5f\t%.5f\t%.5f'
 
+def extract(frames, type) {
+    frames.collect { frame -> frame.grep { (it.type == type) } }
+}
+
 actual_verbs = normalize(transform(extract(actual, 'verb')))
 expected_verbs = normalize(transform(extract(expected, 'verb')))
 
@@ -182,8 +186,4 @@ if (options.t) {
     printf(format + '\n', nmpu, nipu, f1)
 } else {
     printf('Triframe nmPU/niPU/F1: ' + format + '\n', nmpu, nipu, f1)
-}
-
-def extract(frames, type) {
-    frames.collect { frame -> frame.grep { (it.type == type) } }
 }
