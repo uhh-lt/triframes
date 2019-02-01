@@ -9,6 +9,7 @@ import java.nio.file.Paths
 import java.util.regex.Pattern
 import java.util.zip.GZIPInputStream
 
+import static NormalizedModifiedPurity.normalize
 import static NormalizedModifiedPurity.transform
 
 Locale.setDefault(Locale.ROOT)
@@ -70,7 +71,7 @@ def arguments(path) {
         matcher = PREDICATES.matcher(line)
 
         if (matcher.find()) {
-            clusters[id].addAll(matcher.group(1).split(", ").collect { new Element('predicate', it) })
+            clusters[id].addAll(matcher.group(1).split(", ").collect { new Element('verb', it) })
             return
         }
 
@@ -112,22 +113,25 @@ def framenet(path) {
 
         spo = line.split('\t', 3)
 
-        clusters.get(id).add(new Element("subject", spo[0]))
-        clusters.get(id).add(new Element("predicate", spo[1]))
-        clusters.get(id).add(new Element("object", spo[2]))
+        clusters.get(id).add(new Element('subject', spo[0]))
+        clusters.get(id).add(new Element('verb', spo[1]))
+        clusters.get(id).add(new Element('object', spo[2]))
     }
 
     return clusters.values()
 }
 
 actual = arguments(Paths.get(options.arguments()[0]))
-
 expected = framenet(Paths.get(options.arguments()[1]))
+
+purity = new NormalizedModifiedPurity<Element>()
 
 format = options.p ? '%.2f\t%.2f\t%.2f' : '%.5f\t%.5f\t%.5f'
 
-nmpu = new NormalizedModifiedPurity<Element>(transform(actual), transform(expected))
-result = nmpu.get()
+actual_verbs = normalize(transform(extract(actual, 'verb')))
+expected_verbs = normalize(transform(extract(expected, 'verb')))
+
+result = purity.evaluate(actual_verbs, expected_verbs)
 nmpu = result.precision * (options.p ? 100 : 1)
 nipu = result.recall * (options.p ? 100 : 1)
 f1 = result.f1Score * (options.p ? 100 : 1)
@@ -135,18 +139,13 @@ f1 = result.f1Score * (options.p ? 100 : 1)
 if (options.t) {
     printf(format + '\t', nmpu, nipu, f1)
 } else {
-    printf('Triframe  nmPU/niPU/F1: ' + format + '\n', nmpu, nipu, f1)
+    printf('Verb     nmPU/niPU/F1: ' + format + '\n', nmpu, nipu, f1)
 }
 
-def extract(frames, type) {
-    frames.collect { frame -> frame.grep { (it.type == type) } }
-}
+actual_subjects = normalize(transform(extract(actual, 'subject')))
+expected_subjects = normalize(transform(extract(expected, 'subject')))
 
-actual_predicates = extract(actual, 'predicate')
-expected_predicates = extract(expected, 'predicate')
-
-nmpu = new NormalizedModifiedPurity<String>(transform(actual_predicates), transform(expected_predicates))
-result = nmpu.get()
+result = purity.evaluate(actual_subjects, expected_subjects)
 nmpu = result.precision * (options.p ? 100 : 1)
 nipu = result.recall * (options.p ? 100 : 1)
 f1 = result.f1Score * (options.p ? 100 : 1)
@@ -154,14 +153,13 @@ f1 = result.f1Score * (options.p ? 100 : 1)
 if (options.t) {
     printf(format + '\t', nmpu, nipu, f1)
 } else {
-    printf('Predicate nmPU/niPU/F1: ' + format + '\n', nmpu, nipu, f1)
+    printf('Subject  nmPU/niPU/F1: ' + format + '\n', nmpu, nipu, f1)
 }
 
-actual_subjects = extract(actual, 'subject')
-expected_subjects = extract(expected, 'subject')
+actual_objects = normalize(transform(extract(actual, 'object')))
+expected_objects = normalize(transform(extract(expected, 'object')))
 
-nmpu = new NormalizedModifiedPurity<String>(transform(actual_subjects), transform(expected_subjects))
-result = nmpu.get()
+result = purity.evaluate(actual_objects, expected_objects)
 nmpu = result.precision * (options.p ? 100 : 1)
 nipu = result.recall * (options.p ? 100 : 1)
 f1 = result.f1Score * (options.p ? 100 : 1)
@@ -169,14 +167,13 @@ f1 = result.f1Score * (options.p ? 100 : 1)
 if (options.t) {
     printf(format + '\t', nmpu, nipu, f1)
 } else {
-    printf('Subject   nmPU/niPU/F1: ' + format + '\n', nmpu, nipu, f1)
+    printf('Object   nmPU/niPU/F1: ' + format + '\n', nmpu, nipu, f1)
 }
 
-actual_objects = extract(actual, 'object')
-expected_objects = extract(expected, 'object')
+actual_frames = normalize(transform(actual))
+expected_frames = normalize(transform(expected))
 
-nmpu = new NormalizedModifiedPurity<String>(transform(actual_objects), transform(expected_objects))
-result = nmpu.get()
+result = purity.evaluate(actual_frames, expected_frames)
 nmpu = result.precision * (options.p ? 100 : 1)
 nipu = result.recall * (options.p ? 100 : 1)
 f1 = result.f1Score * (options.p ? 100 : 1)
@@ -184,5 +181,9 @@ f1 = result.f1Score * (options.p ? 100 : 1)
 if (options.t) {
     printf(format + '\n', nmpu, nipu, f1)
 } else {
-    printf('Object    nmPU/niPU/F1: ' + format + '\n', nmpu, nipu, f1)
+    printf('Triframe nmPU/niPU/F1: ' + format + '\n', nmpu, nipu, f1)
+}
+
+def extract(frames, type) {
+    frames.collect { frame -> frame.grep { (it.type == type) } }
 }

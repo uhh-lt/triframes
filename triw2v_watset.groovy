@@ -8,7 +8,7 @@ import net.razorvine.pickle.Unpickler
 import org.jgrapht.graph.DefaultWeightedEdge
 import org.jgrapht.graph.SimpleWeightedGraph
 import org.nlpub.watset.cli.AlgorithmProvider
-import org.nlpub.watset.vsm.ContextCosineSimilarity
+import org.nlpub.watset.vsm.CosineContextSimilarity
 import org.nlpub.watset.wsi.Watset
 
 @CompileStatic
@@ -34,7 +34,7 @@ stream = new FileInputStream(options.arguments().get(0))
 unpickler = new Unpickler()
 edges = (List) unpickler.load(stream)
 
-builder = SimpleWeightedGraph.<Triple, DefaultWeightedEdge> createBuilder(DefaultWeightedEdge.class);
+builder = SimpleWeightedGraph.<Triple, DefaultWeightedEdge> createBuilder(DefaultWeightedEdge.class)
 
 edges.each {
     (sourceTuple, targetTuple, data) = it
@@ -50,7 +50,7 @@ edges.each {
 
 graph = builder.build()
 
-watset = new Watset<Triple, DefaultWeightedEdge>(graph, local, global, new ContextCosineSimilarity<>())
+watset = new Watset<Triple, DefaultWeightedEdge>(graph, local, global, new CosineContextSimilarity<>())
 watset.run()
 
 id = 0
