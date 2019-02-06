@@ -117,7 +117,7 @@ if (options.s) {
     random = new Random(1337)
 
     dataset = actual.toArray(new Map<String, Double>[0])
-    f1_samples = new double[500]
+    f1_samples = new double[10000]
 
     System.err.print('Bootstrapping')
 
