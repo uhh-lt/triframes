@@ -1,5 +1,7 @@
 #!/usr/bin/env groovy
 import org.nlpub.watset.eval.NormalizedModifiedPurity
+import org.nlpub.watset.eval.CachedNormalizedModifiedPurity
+import org.nlpub.watset.util.Sampling
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -8,6 +10,7 @@ import java.util.regex.Pattern
 import java.util.zip.GZIPInputStream
 
 import static NormalizedModifiedPurity.transform
+import static NormalizedModifiedPurity.normalize
 
 Locale.setDefault(Locale.ROOT)
 
@@ -19,6 +22,7 @@ def options = new CliBuilder().with {
 
     t 'tabular format'
     p 'percentage format'
+    s args: 1, 'sampling file'
 
     parse(args) ?: System.exit(1)
 }
@@ -39,7 +43,6 @@ def lines(path) {
         }
     }
 }
-
 
 TAB = Pattern.compile('\t+')
 
@@ -88,21 +91,49 @@ def arguments(path, expected) {
     return clusters.values()
 }
 
-expected = korhonen(Paths.get(options.arguments()[1]))
+expected_raw = korhonen(Paths.get(options.arguments()[1]))
+actual_raw = arguments(Paths.get(options.arguments()[0]), expected_raw)
 
-actual = arguments(Paths.get(options.arguments()[0]), expected)
+expected = normalize(transform(expected_raw))
+actual = transform(actual_raw)
 
-nmpu = new NormalizedModifiedPurity<>(transform(actual), transform(expected))
-result = nmpu.get()
+purity_pr = new CachedNormalizedModifiedPurity<>()
+purity_re = new NormalizedModifiedPurity<>(true, false)
+result = NormalizedModifiedPurity.evaluate(purity_pr, purity_re, normalize(actual), expected)
 
-format = options.p ? '%.2f\t%.2f\t%.2f\n' : '%.5f\t%.5f\t%.5f\n'
+format = options.p ? '%.2f\t%.2f\t%.2f%n' : '%.5f\t%.5f\t%.5f%n'
 
-nmpu = result.precision * (options.p ? 100 : 1)
-nipu = result.recall * (options.p ? 100 : 1)
+nmPU = result.precision * (options.p ? 100 : 1)
+niPU = result.recall * (options.p ? 100 : 1)
 f1 = result.f1Score * (options.p ? 100 : 1)
 
 if (options.t) {
-    printf(format, nmpu, nipu, f1)
+    printf(format, nmPU, niPU, f1)
 } else {
-    printf('nmPU/niPU/F1: ' + format, nmpu, nipu, f1)
+    printf('nmPU/niPU/F1: ' + format, nmPU, niPU, f1)
+}
+
+if (options.s) {
+    random = new Random(1337)
+
+    dataset = actual.toArray(new Map<String, Double>[0])
+    f1_samples = new double[500]
+
+    System.err.print('Bootstrapping')
+
+    for (i = 0; i < f1_samples.length; i++) {
+        sample = normalize(Sampling.sample(dataset, random))
+        result = NormalizedModifiedPurity.evaluate(purity_pr, purity_re, sample, expected)
+        f1_samples[i] = result.f1Score
+        System.err.printf(' %d', i + 1)
+        System.err.flush()
+    }
+
+    System.err.println()
+
+    Files.newOutputStream(Paths.get(options.s)).withCloseable { fos ->
+        new ObjectOutputStream(fos).withCloseable { oos ->
+            oos.writeObject(f1_samples)
+        }
+    }
 }

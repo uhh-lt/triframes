@@ -2,6 +2,8 @@
 import groovy.transform.Canonical
 import groovy.transform.CompileStatic
 import org.nlpub.watset.eval.NormalizedModifiedPurity
+import org.nlpub.watset.eval.CachedNormalizedModifiedPurity
+import org.nlpub.watset.util.Sampling
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -22,6 +24,7 @@ def options = new CliBuilder().with {
 
     t 'tabular format'
     p 'percentage format'
+    s args: 1, 'sampling file'
 
     parse(args) ?: System.exit(1)
 }
@@ -124,7 +127,8 @@ def framenet(path) {
 actual = arguments(Paths.get(options.arguments()[0]))
 expected = framenet(Paths.get(options.arguments()[1]))
 
-purity = new NormalizedModifiedPurity<Element>()
+purity_pr = new NormalizedModifiedPurity<Element>()
+purity_re = new NormalizedModifiedPurity<Element>(true, false)
 
 format = options.p ? '%.2f\t%.2f\t%.2f' : '%.5f\t%.5f\t%.5f'
 
@@ -135,35 +139,35 @@ def extract(frames, type) {
 actual_verbs = normalize(transform(extract(actual, 'verb')))
 expected_verbs = normalize(transform(extract(expected, 'verb')))
 
-result = purity.evaluate(actual_verbs, expected_verbs)
-nmpu = result.precision * (options.p ? 100 : 1)
-nipu = result.recall * (options.p ? 100 : 1)
+result = NormalizedModifiedPurity.evaluate(purity_pr, purity_re, actual_verbs, expected_verbs)
+nmPU = result.precision * (options.p ? 100 : 1)
+niPU = result.recall * (options.p ? 100 : 1)
 f1 = result.f1Score * (options.p ? 100 : 1)
 
 if (options.t) {
-    printf(format + '\t', nmpu, nipu, f1)
+    printf(format + '\t', nmPU, niPU, f1)
 } else {
-    printf('Verb     nmPU/niPU/F1: ' + format + '\n', nmpu, nipu, f1)
+    printf('Verb     nmPU/niPU/F1: ' + format + '%n', nmPU, niPU, f1)
 }
 
 actual_subjects = normalize(transform(extract(actual, 'subject')))
 expected_subjects = normalize(transform(extract(expected, 'subject')))
 
-result = purity.evaluate(actual_subjects, expected_subjects)
-nmpu = result.precision * (options.p ? 100 : 1)
-nipu = result.recall * (options.p ? 100 : 1)
+result = NormalizedModifiedPurity.evaluate(purity_pr, purity_re, actual_subjects, expected_subjects)
+nmPU = result.precision * (options.p ? 100 : 1)
+niPU = result.recall * (options.p ? 100 : 1)
 f1 = result.f1Score * (options.p ? 100 : 1)
 
 if (options.t) {
-    printf(format + '\t', nmpu, nipu, f1)
+    printf(format + '\t', nmPU, niPU, f1)
 } else {
-    printf('Subject  nmPU/niPU/F1: ' + format + '\n', nmpu, nipu, f1)
+    printf('Subject  nmPU/niPU/F1: ' + format + '%n', nmPU, niPU, f1)
 }
 
 actual_objects = normalize(transform(extract(actual, 'object')))
 expected_objects = normalize(transform(extract(expected, 'object')))
 
-result = purity.evaluate(actual_objects, expected_objects)
+result = NormalizedModifiedPurity.evaluate(purity_pr, purity_re, actual_objects, expected_objects)
 nmpu = result.precision * (options.p ? 100 : 1)
 nipu = result.recall * (options.p ? 100 : 1)
 f1 = result.f1Score * (options.p ? 100 : 1)
@@ -171,19 +175,45 @@ f1 = result.f1Score * (options.p ? 100 : 1)
 if (options.t) {
     printf(format + '\t', nmpu, nipu, f1)
 } else {
-    printf('Object   nmPU/niPU/F1: ' + format + '\n', nmpu, nipu, f1)
+    printf('Object   nmPU/niPU/F1: ' + format + '%n', nmpu, nipu, f1)
 }
 
-actual_frames = normalize(transform(actual))
+actual_frames = transform(actual)
 expected_frames = normalize(transform(expected))
 
-result = purity.evaluate(actual_frames, expected_frames)
+purity_pr = new CachedNormalizedModifiedPurity<Element>(true, false)
+result = NormalizedModifiedPurity.evaluate(purity_pr, purity_re, normalize(actual_frames), expected_frames)
 nmpu = result.precision * (options.p ? 100 : 1)
 nipu = result.recall * (options.p ? 100 : 1)
 f1 = result.f1Score * (options.p ? 100 : 1)
 
 if (options.t) {
-    printf(format + '\n', nmpu, nipu, f1)
+    printf(format + '%n', nmpu, nipu, f1)
 } else {
-    printf('Triframe nmPU/niPU/F1: ' + format + '\n', nmpu, nipu, f1)
+    printf('Triframe nmPU/niPU/F1: ' + format + '%n', nmpu, nipu, f1)
+}
+
+if (options.s) {
+    random = new Random(1337)
+
+    dataset = actual_frames.toArray(new Map<String, Double>[0])
+    f1_samples = new double[500]
+
+    System.err.print('Bootstrapping')
+
+    for (i = 0; i < f1_samples.length; i++) {
+        sample = normalize(Sampling.sample(dataset, random))
+        result = NormalizedModifiedPurity.evaluate(purity_pr, purity_re, sample, expected_frames)
+        f1_samples[i] = result.f1Score
+        System.err.printf(' %d', i + 1)
+        System.err.flush()
+    }
+
+    System.err.println()
+
+    Files.newOutputStream(Paths.get(options.s)).withCloseable { fos ->
+        new ObjectOutputStream(fos).withCloseable { oos ->
+            oos.writeObject(f1_samples)
+        }
+    }
 }

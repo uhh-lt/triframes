@@ -7,9 +7,9 @@ import net.razorvine.pickle.Unpickler
 
 import org.jgrapht.graph.DefaultWeightedEdge
 import org.jgrapht.graph.SimpleWeightedGraph
-import org.nlpub.watset.cli.AlgorithmProvider
-import org.nlpub.watset.vsm.CosineContextSimilarity
-import org.nlpub.watset.wsi.Watset
+import org.nlpub.watset.util.AlgorithmProvider
+import org.nlpub.watset.util.CosineContextSimilarity
+import org.nlpub.watset.graph.Watset
 
 @CompileStatic
 @Canonical
