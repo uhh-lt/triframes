@@ -181,7 +181,7 @@ if (options.t) {
 actual_frames = transform(actual)
 expected_frames = normalize(transform(expected))
 
-purity_pr = new CachedNormalizedModifiedPurity<Element>(true, false)
+purity_pr = new CachedNormalizedModifiedPurity<Element>()
 result = NormalizedModifiedPurity.evaluate(purity_pr, purity_re, normalize(actual_frames), expected_frames)
 nmpu = result.precision * (options.p ? 100 : 1)
 nipu = result.recall * (options.p ? 100 : 1)
@@ -197,7 +197,7 @@ if (options.s) {
     random = new Random(1337)
 
     dataset = actual_frames.toArray(new Map<String, Double>[0])
-    f1_samples = new double[500]
+    f1_samples = new double[1000]
 
     System.err.print('Bootstrapping')
 
