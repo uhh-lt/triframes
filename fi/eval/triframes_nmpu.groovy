@@ -2,7 +2,6 @@
 import groovy.transform.Canonical
 import groovy.transform.CompileStatic
 import org.nlpub.watset.eval.NormalizedModifiedPurity
-import org.nlpub.watset.eval.CachedNormalizedModifiedPurity
 import org.nlpub.watset.util.Sampling
 
 import java.nio.charset.StandardCharsets
@@ -181,7 +180,6 @@ if (options.t) {
 actual_frames = transform(actual)
 expected_frames = normalize(transform(expected))
 
-purity_pr = new CachedNormalizedModifiedPurity<Element>()
 result = NormalizedModifiedPurity.evaluate(purity_pr, purity_re, normalize(actual_frames), expected_frames)
 nmpu = result.precision * (options.p ? 100 : 1)
 nipu = result.recall * (options.p ? 100 : 1)
