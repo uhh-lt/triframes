@@ -1,6 +1,5 @@
 #!/usr/bin/env groovy
 import org.nlpub.watset.eval.NormalizedModifiedPurity
-import org.nlpub.watset.eval.CachedNormalizedModifiedPurity
 import org.nlpub.watset.util.Sampling
 
 import java.nio.charset.StandardCharsets
@@ -97,7 +96,7 @@ actual_raw = arguments(Paths.get(options.arguments()[0]), expected_raw)
 expected = normalize(transform(expected_raw))
 actual = transform(actual_raw)
 
-purity_pr = new CachedNormalizedModifiedPurity<>()
+purity_pr = new NormalizedModifiedPurity<>()
 purity_re = new NormalizedModifiedPurity<>(true, false)
 result = NormalizedModifiedPurity.evaluate(purity_pr, purity_re, normalize(actual), expected)
 
