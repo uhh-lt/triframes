@@ -15,7 +15,7 @@ if false ; then
 
 echo -n > results-verbs.txt
 
-for FRAMES in triw2v-watset-n30-top-top-triples.txt hosg-kmeans-300-10-10000.txt noac-1000-0_25.txt trispectral-k500-triples.txt trikmeans-k500-triples.txt lda-frames.txt triw2v-n30-triples.txt ; do
+for FRAMES in triw2v-watset-n30-top-top-triples.txt hosg-kmeans-300-10-10000.txt noac-1000-0_25.txt trispectral-k500-triples.txt trikmeans-k500-triples.txt lda-frames.txt triw2v-n30-triples.txt singletons.txt whole.txt ; do
     VERBS_SAMPLES="${FRAMES%.txt}-verbs.ser"
 
     echo "# $FRAMES" >> results-verbs.txt
@@ -27,7 +27,7 @@ fi
 
 echo -n > results.txt
 
-for FRAMES in triw2v-watset-n30-top-top-triples.txt hosg-kmeans-300-10-10000.txt noac-1000-0_25.txt trispectral-k500-triples.txt trikmeans-k500-triples.txt lda-frames.txt triw2v-n30-triples.txt ; do
+for FRAMES in triw2v-watset-n30-top-top-triples.txt hosg-kmeans-300-10-10000.txt noac-1000-0_25.txt trispectral-k500-triples.txt trikmeans-k500-triples.txt lda-frames.txt triw2v-n30-triples.txt singletons.txt whole.txt ; do
     FRAMES_SAMPLES="${FRAMES%.txt}.ser"
 
     echo "# $FRAMES" >> results.txt
