@@ -11,11 +11,9 @@ VERBS_NMPU="fi/eval/verbs_nmpu.groovy"
 FRAMES_GOLD="fn-depcc-triples.tsv"
 VERBS_GOLD="$WORK/acl2014-dk-verb-classes/gold/korhonen2003.poly.txt"
 
-if false ; then
-
 echo -n > results-verbs.txt
 
-for FRAMES in triw2v-watset-n30-top-top-triples.txt hosg-kmeans-300-10-10000.txt noac-1000-0_25.txt trispectral-k500-triples.txt trikmeans-k500-triples.txt lda-frames.txt triw2v-n30-triples.txt singletons.txt whole.txt ; do
+for FRAMES in lda-frames.txt triw2v-watset-n30-top-top-triples.txt noac-1000-0_25.txt triw2v-watset-n30-mcl-mcl-triples.txt trispectral-k500-triples.txt hosg-kmeans-300-10-10000.txt trikmeans-k500-triples.txt triw2v-n30-triples.txt whole.txt singletons.txt ; do
     VERBS_SAMPLES="${FRAMES%.txt}-verbs.ser"
 
     echo "# $FRAMES" >> results-verbs.txt
@@ -23,11 +21,9 @@ for FRAMES in triw2v-watset-n30-top-top-triples.txt hosg-kmeans-300-10-10000.txt
     echo >> results-verbs.txt
 done
 
-fi
-
 echo -n > results.txt
 
-for FRAMES in triw2v-watset-n30-top-top-triples.txt hosg-kmeans-300-10-10000.txt noac-1000-0_25.txt trispectral-k500-triples.txt trikmeans-k500-triples.txt lda-frames.txt triw2v-n30-triples.txt singletons.txt whole.txt ; do
+for FRAMES in triw2v-watset-n30-top-top-triples.txt triw2v-watset-n30-mcl-mcl-triples.txt hosg-kmeans-300-10-10000.txt noac-1000-0_25.txt trispectral-k500-triples.txt trikmeans-k500-triples.txt lda-frames.txt triw2v-n30-triples.txt singletons.txt whole.txt ; do
     FRAMES_SAMPLES="${FRAMES%.txt}.ser"
 
     echo "# $FRAMES" >> results.txt
