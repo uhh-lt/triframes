@@ -113,7 +113,7 @@ payload = triframes.grep {
     it.value['subjects'].removeAll(STOPWORDS)
     it.value['objects'].removeAll(STOPWORDS)
 
-    !(it.value['subjects'].isEmpty() || it.value['objects'].isEmpty()) && it.value.values().flatten().size() > 3
+    it.value['subjects'].size() > 1 && it.value['verbs'].size() > 1 && it.value['objects'].size() > 1
 }
 
 System.err.println(payload.size() + ' non-trivial triframe(s) found')
