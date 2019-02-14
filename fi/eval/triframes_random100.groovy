@@ -37,9 +37,9 @@ def options = new CliBuilder().with {
 
 STOPWORDS = ['all', 'another', 'any', 'anybody', 'anyone', 'anything', 'both', 'each', 'either',
             'enough', 'everybody', 'everyone', 'everything', 'few', 'he', 'her', 'hers', 'herself',
-            'him', 'himself', 'his', 'i', 'in', 'it', 'itself', 'little', 'many', 'me', 'mine', 'more',
-            'most', 'much', 'myself', 'neither', 'nobody', 'none', 'no one', 'nothing', 'one',
-            'other', 'others', 'ours', 'ourselves', 'several', 'she', 'some', 'somebody', 'someone',
+            'him', 'himself', 'his', 'i', 'in', 'it', 'its', 'itself', 'little', 'many', 'me', 'mine',
+            'more', 'most', 'much', 'myself', 'neither', 'nobody', 'none', 'no one', 'nothing', 'one',
+            'other', 'others', 'ours', 'ourselves', 'out', 'several', 'she', 'some', 'somebody', 'someone',
             'something', 'such', 'that', 'theirs', 'them', 'themselves', 'these', 'they', 'this',
             'those', 'us', 'we', 'what', 'whatever', 'which', 'whichever', 'who', 'whoever', 'whom',
             'whomever', 'whose', 'you', 'yours', 'yourself'] as Set
