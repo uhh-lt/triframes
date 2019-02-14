@@ -24,7 +24,7 @@ import java.util.zip.GZIPInputStream
  */
 
 /*
- * Usage: groovy -classpath ../watset-java/target/watset.jar triframes_nmpu.groovy arguments.txt[.gz] fn-depcc-triples.tsv[.gz]
+ * Usage: groovy triframes_random100.groovy arguments.txt[.gz]
  */
 def options = new CliBuilder().with {
     usage = 'triframes_random100.groovy arguments.txt[.gz]'
