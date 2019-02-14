@@ -29,10 +29,20 @@ import java.util.zip.GZIPInputStream
 def options = new CliBuilder().with {
     usage = 'triframes_random100.groovy arguments.txt[.gz]'
 
-    s args: 1, 'seed'
+    s args: 1, 'sample size'
+    r args: 1, 'random seed'
 
     parse(args) ?: System.exit(1)
 }
+
+STOPWORDS = ['all', 'another', 'any', 'anybody', 'anyone', 'anything', 'both', 'each', 'either',
+            'enough', 'everybody', 'everyone', 'everything', 'few', 'he', 'her', 'hers', 'herself',
+            'him', 'himself', 'his', 'i', 'in', 'it', 'itself', 'little', 'many', 'me', 'mine', 'more',
+            'most', 'much', 'myself', 'neither', 'nobody', 'none', 'no one', 'nothing', 'one',
+            'other', 'others', 'ours', 'ourselves', 'several', 'she', 'some', 'somebody', 'someone',
+            'something', 'such', 'that', 'theirs', 'them', 'themselves', 'these', 'they', 'this',
+            'those', 'us', 'we', 'what', 'whatever', 'which', 'whichever', 'who', 'whoever', 'whom',
+            'whomever', 'whose', 'you', 'yours', 'yourself'] as Set
 
 CLUSTER = Pattern.compile('^# Cluster *(.+?)$')
 PREDICATES = Pattern.compile('^Predicates: *(.+)$')
@@ -72,21 +82,21 @@ def arguments(path) {
         matcher = PREDICATES.matcher(line)
 
         if (matcher.find()) {
-            clusters[id]['verbs'].addAll(matcher.group(1).split(", "))
+            clusters[id]['verbs'].addAll(matcher.group(1).split(", ").collect { it.toLowerCase() })
             return
         }
 
         matcher = SUBJECTS.matcher(line)
 
         if (matcher.find()) {
-            clusters[id]['subjects'].addAll(matcher.group(2).split(", "))
+            clusters[id]['subjects'].addAll(matcher.group(2).split(", ").collect { it.toLowerCase() })
             return
         }
 
         matcher = OBJECTS.matcher(line)
 
         if (matcher.find()) {
-            clusters[id]['objects'].addAll(matcher.group(2).split(", "))
+            clusters[id]['objects'].addAll(matcher.group(2).split(", ").collect { it.toLowerCase() })
             return
         }
     }
@@ -96,18 +106,29 @@ def arguments(path) {
 
 triframes = arguments(Paths.get(options.arguments()[0]))
 
-sample = triframes.grep { it.value.values().flatten().size() > 3 }
+System.err.println(triframes.size() + ' triframe(s) found in the dataset')
 
-System.err.printf('%d non-trivial frames found%n', sample.size())
+payload = triframes.grep {
+    // Yes, we modify the map values here, but why not.
+    it.value['subjects'].removeAll(STOPWORDS)
+    it.value['objects'].removeAll(STOPWORDS)
+
+    !(it.value['subjects'].isEmpty() || it.value['objects'].isEmpty()) && it.value.values().flatten().size() > 3
+}
+
+System.err.println(payload.size() + ' non-trivial triframe(s) found')
+
+size = Math.min(options.s ? Integer.valueOf(options.s) : 100, payload.size)
+System.err.println('Sample size is ' + size)
+
+random = new Random(options.r ? Integer.valueOf(options.r) : 1337)
 
 printf('id\tvote\tsubjects\tverbs\tobjects%n')
 
-random = new Random(options.s ? Integer.valueOf(options.s) : 1337)
-
-sample.with { Collections.shuffle(it, random); it }.take(100).each {
+payload.with { Collections.shuffle(it, random); it }.take(size).each {
     printf('%s\t\t%s\t%s\t%s%n',
             it.key,
-            it.value['subjects'].join(', '),
-            it.value['verbs'].join(', '),
-            it.value['objects'].join(', '))
+            it.value['subjects'].unique().join(', '),
+            it.value['verbs'].unique().join(', '),
+            it.value['objects'].unique().join(', '))
 }
