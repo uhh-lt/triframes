@@ -39,32 +39,39 @@ args.eachWithIndex { filename, rater ->
 }
 
 def aggregate(answers) {
-    answers.sort().inject([:]) { counts, _, vote ->
-        counts[vote] = counts.getOrDefault(vote, 0) + 1
+    answers.sort().inject([:]) { counts, _, answer ->
+        counts[answer] = counts.getOrDefault(answer, 0) + 1
         counts
     }
 }
 
-def major(answers) {
-    winner = aggregate(answers).max { it.value }
+def major(counts) {
+    winner = counts.max { it.value }
     [winner.key, winner.value]
 }
 
-good = items.grep {
-    (winner, count) = major(it.value)
-    winner && count == it.value.size()
-}.collectEntries()
+aggregated = items.inject([:]) { output, key, answers ->
+    counts = aggregate(answers)
+    (winner, count) = major(counts)
+    output[key] = ['counts': counts, 'major': winner, 'unanimously': count == answers.size()]
+    output
+}
 
-System.err.println('Unanimously good: ' + good.size())
+System.err.println('Unanimously good: ' + aggregated.values().grep { info ->
+    info['major'] && info['unanimously']
+}.size())
 
-bad = items.grep {
-    (winner, count) = major(it.value)
-    !winner && count == it.value.size()
-}.collectEntries()
+System.err.println('Total good: ' + aggregated.values().grep { info ->
+    info['major']
+}.size())
 
-System.err.println('Unanimously bad: ' + bad.size())
+System.err.println('Unanimously bad: ' + aggregated.values().grep { info ->
+    !info['major'] && info['unanimously']
+}.size())
 
-System.err.println('Clash: ' + (items.size() - good.size() - bad.size()))
+System.err.println('Total bad: ' + aggregated.values().grep { info ->
+    !info['major']
+}.size())
 
 study = new CodingAnnotationStudy(args.size())
 
@@ -87,16 +94,15 @@ System.err.printf('FleissKappaAgreement: %f%n', fleissKappa.calculateAgreement()
 randolphKappa = new RandolphKappaAgreement(study)
 System.err.printf('RandolphKappaAgreement: %f%n', randolphKappa.calculateAgreement())
 
-printf('id\tclass\tvotes1\tvotes0\tsubjects\tverbs\tobjects%n')
+printf('id\tmajor\tclass\tvotes1\tvotes0\tsubjects\tverbs\tobjects%n')
 
-items.sort { good.containsKey(it.key) ? 2 : bad.containsKey(it.key) ? 1 : 0 }.each {
-    counts = aggregate(it.value)
-
-    printf('%s\t%s\t%d\t%d\t%s\t%s\t%s%n',
+items.sort { aggregated[it.key]['unanimously'] ? (aggregated[it.key]['major'] ? 2 : 1) : 0 }.each {
+    printf('%s\t%d\t%s\t%d\t%d\t%s\t%s\t%s%n',
             it.key,
-            good.containsKey(it.key) ? 'good' : bad.containsKey(it.key) ? 'bad' : 'clash',
-            counts.getOrDefault(true, 0),
-            counts.getOrDefault(false, 0),
+            aggregated[it.key]['major'] ? 1 : 0,
+            aggregated[it.key]['unanimously'] ? (aggregated[it.key]['major'] ? 'good' : 'bad') : 'clash',
+            aggregated[it.key]['counts'].getOrDefault(true, 0),
+            aggregated[it.key]['counts'].getOrDefault(false, 0),
             subjects[it.key],
             verbs[it.key],
             objects[it.key],
