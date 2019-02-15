@@ -87,7 +87,7 @@ System.err.printf('FleissKappaAgreement: %f%n', fleissKappa.calculateAgreement()
 randolphKappa = new RandolphKappaAgreement(study)
 System.err.printf('RandolphKappaAgreement: %f%n', randolphKappa.calculateAgreement())
 
-printf('id\tclass\tvote1\tvote0\tsubjects\tverbs\tobjects%n')
+printf('id\tclass\tvotes1\tvotes0\tsubjects\tverbs\tobjects%n')
 
 items.sort { good.containsKey(it.key) ? 2 : bad.containsKey(it.key) ? 1 : 0 }.each {
     counts = aggregate(it.value)
