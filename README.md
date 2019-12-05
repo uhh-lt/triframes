@@ -65,19 +65,20 @@ Our data are available to download on the [Releases](https://github.com/uhh-lt/t
 
 ## Citation
 
-* [Ustalov, D.](https://github.com/dustalov), [Panchenko, A.](https://github.com/alexanderpanchenko), [Kutuzov, A.](https://github.com/akutuzov), [Biemann, C.](https://www.inf.uni-hamburg.de/en/inst/ab/lt/people/chris-biemann.html), [Ponzetto, S.P.](https://www.uni-mannheim.de/dws/people/professors/prof-dr-simone-paolo-ponzetto/): [Unsupervised Semantic Frame Induction using Triclustering](https://doi.org/10.18653/v1/P18-2010). In: Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics (Volume&nbsp;2: Short Papers). pp.&nbsp;55–62. Association for Computational Linguistics, Melbourne, VIC, Australia (2018)
+* [Ustalov, D.](https://github.com/dustalov), [Panchenko, A.](https://github.com/alexanderpanchenko), [Biemann, C.](https://www.inf.uni-hamburg.de/en/inst/ab/lt/people/chris-biemann.html), [Ponzetto, S.P.](https://www.uni-mannheim.de/dws/people/professors/prof-dr-simone-paolo-ponzetto/): [Watset: Local-Global Graph Clustering with Applications in Sense and Frame Induction](https://doi.org/10.1162/COLI_a_00354). Computational Linguistics 45(3), 423&ndash;479 (2019)
 
-```latex
-@inproceedings{Ustalov:18:acl,
-  author    = {Ustalov, Dmitry and Panchenko, Alexander and Kutuzov, Andrei and Biemann, Chris and Ponzetto, Simone Paolo},
-  title     = {{Unsupervised Semantic Frame Induction using Triclustering}},
-  booktitle = {Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics (Volume 2: Short Papers)},
-  series    = {ACL~2018},
-  year      = {2018},
-  pages     = {55--62},
-  address   = {Melbourne, VIC, Australia},
-  publisher = {Association for Computational Linguistics},
-  doi       = {10.18653/v1/P18-2010},
+```bibtex
+@article{Ustalov:19:cl,
+  author    = {Ustalov, Dmitry and Panchenko, Alexander and Biemann, Chris and Ponzetto, Simone Paolo},
+  title     = {{Watset: Local-Global Graph Clustering with Applications in Sense and Frame Induction}},
+  journal   = {Computational Linguistics},
+  year      = {2019},
+  volume    = {45},
+  number    = {3},
+  pages     = {423--479},
+  doi       = {10.1162/COLI_a_00354},
+  publisher = {MIT Press},
+  issn      = {0891-2017},
   language  = {english},
 }
 ```
